@@ -1,0 +1,10 @@
+{
+  "app_id": "aristock",
+  "name": "바이브주식",
+  "description": "AI가 주식상담, 포트폴리오 관리, 그리고 전략을 직접 짜주는 스마트한 투자 파트너, 바이브주식입니다.",
+  "category": "Finance / Investing",
+  "github_url": "https://github.com/rightsna/ARIStock",
+  "version": "1.0.3",
+  "version_code": 4,
+  "platform": "mac"
+}
