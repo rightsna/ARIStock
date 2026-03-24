@@ -5,16 +5,16 @@ import 'shared/theme.dart';
 import 'components/layout/main_layout.dart';
 import 'components/portfolio/providers/portfolio_provider.dart';
 import 'components/portfolio/models/stock.dart';
-import 'components/consultation/providers/consultation_provider.dart';
-import 'components/consultation/models/consultation_model.dart';
-import 'components/strategy/providers/strategy_provider.dart';
-import 'components/strategy/models/strategy_model.dart';
+import 'components/analysis/providers/analysis_provider.dart';
+import 'components/analysis/models/analysis_model.dart';
 import 'components/account/providers/account_provider.dart';
 import 'components/account/models/portfolio_report_model.dart';
 import 'components/account/services/kiwoom_services.dart';
+import 'components/watchlist/providers/watchlist_provider.dart';
+import 'components/watchlist/models/watchlist_model.dart';
 import 'package:ari_plugin/ari_plugin.dart';
 
-import 'services/protocol/ari_protocol_handler.dart';
+import 'shared/services/protocol/ari_protocol_handler.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,19 +23,27 @@ void main(List<String> args) async {
   await Hive.initFlutter();
 
   // 어댑터 등록
-  Hive.registerAdapter(ConsultationStockAdapter());
-  Hive.registerAdapter(ConsultationLogAdapter());
-  Hive.registerAdapter(StrategyAdapter());
-  Hive.registerAdapter(TradingLogAdapter());
+  Hive.registerAdapter(AnalysisStockAdapter());
+  Hive.registerAdapter(AnalysisLogAdapter());
+  Hive.registerAdapter(AnalysisCheckPointAdapter());
   Hive.registerAdapter(PortfolioReportAdapter());
   Hive.registerAdapter(StockAdapter());
+  Hive.registerAdapter(WatchlistStockAdapter());
 
-  // Provider 인스턴스 미리 생성
-  final portfolioProvider = PortfolioProvider()..init();
-  final consultationProvider = ConsultationProvider()..init();
-  final strategyProvider = StrategyProvider()..init();
+  // Provider 인스턴스 생성 및 초기화 대기
+  final portfolioProvider = PortfolioProvider();
+  await portfolioProvider.init();
+  
+  final analysisProvider = AnalysisProvider();
+  await analysisProvider.init();
+  
   final kiwoom = KiwoomServiceBundle();
-  final accountProvider = AccountProvider(kiwoom: kiwoom)..init();
+  final accountProvider = AccountProvider(kiwoom: kiwoom);
+  await accountProvider.init();
+  
+  final watchlistProvider = WatchlistProvider();
+  await watchlistProvider.init(accountProvider);
+  
   final marketDataService = KiwoomMarketDataService(kiwoom.market);
 
   // ARI Plugin 연동 설정
@@ -59,9 +67,9 @@ void main(List<String> args) async {
 
     final handler = ARIProtocolHandler.create(
       portfolioProvider: portfolioProvider,
-      consultationProvider: consultationProvider,
-      strategyProvider: strategyProvider,
+      analysisProvider: analysisProvider,
       accountProvider: accountProvider,
+      watchlistProvider: watchlistProvider,
       marketDataService: marketDataService,
     );
     handler.start();
@@ -71,9 +79,9 @@ void main(List<String> args) async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: portfolioProvider),
-        ChangeNotifierProvider.value(value: consultationProvider),
-        ChangeNotifierProvider.value(value: strategyProvider),
+        ChangeNotifierProvider.value(value: analysisProvider),
         ChangeNotifierProvider.value(value: accountProvider),
+        ChangeNotifierProvider.value(value: watchlistProvider),
       ],
       child: const ARIStockApp(),
     ),

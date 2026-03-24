@@ -48,7 +48,7 @@ class AssetSummaryCard extends StatelessWidget {
             children: [
               const Text(
                 '총 자산 가치',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+                style: TextStyle(color: AppTheme.textMain70, fontSize: 14),
               ),
               _buildRefreshButton(),
             ],
@@ -57,7 +57,7 @@ class AssetSummaryCard extends StatelessWidget {
           Text(
             format.format(totalAssets),
             style: const TextStyle(
-                color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                color: AppTheme.textMain, fontSize: 32, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Row(
@@ -67,7 +67,7 @@ class AssetSummaryCard extends StatelessWidget {
                 '${profitRate > 0 ? '+' : ''}${profitRate.toStringAsFixed(2)}%',
                 valueColor: profitRate > 0
                     ? AppTheme.accentGreen
-                    : (profitRate < 0 ? AppTheme.accentRed : Colors.white),
+                    : (profitRate < 0 ? AppTheme.accentRed : AppTheme.textMain),
               ),
               const SizedBox(width: 24),
               _buildSimpleStat('예수금', format.format(deposit)),
@@ -93,25 +93,25 @@ class AssetSummaryCard extends StatelessWidget {
               height: 14,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: Colors.white70,
+                color: AppTheme.textMain70,
               ),
             )
           : const Icon(
               Icons.refresh_rounded,
-              color: Colors.white70,
+              color: AppTheme.textMain70,
               size: 18,
             ),
       tooltip: '새로고침',
     );
   }
 
-  Widget _buildSimpleStat(String label, String value, {Color valueColor = Colors.white}) {
+  Widget _buildSimpleStat(String label, String value, {Color valueColor = AppTheme.textMain}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
+          style: TextStyle(color: AppTheme.textMain.withValues(alpha: 0.5), fontSize: 12),
         ),
         const SizedBox(height: 4),
         Text(

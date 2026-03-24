@@ -40,7 +40,7 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: portfolio.stocks.isEmpty
                   ? const Center(
-                      child: Text('보유 종목이 없습니다.', style: TextStyle(color: Colors.white54)),
+                      child: Text('보유 종목이 없습니다.', style: TextStyle(color: AppTheme.textMain54)),
                     )
                   : ListView.builder(
                       itemCount: portfolio.stocks.length,
@@ -93,7 +93,7 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 14)),
+              Text(title, style: TextStyle(color: AppTheme.textMain.withValues(alpha: 0.6), fontSize: 14)),
               const SizedBox(height: 8),
               Text(value, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
@@ -109,8 +109,8 @@ class DashboardScreen extends StatelessWidget {
     return Center(
       child: TextButton.icon(
         onPressed: () => provider.clearAll(),
-        icon: const Icon(Icons.delete_outline, size: 16, color: Colors.white38),
-        label: const Text('데이터 초기화', style: TextStyle(color: Colors.white38, fontSize: 12)),
+        icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.textMain38),
+        label: const Text('데이터 초기화', style: TextStyle(color: AppTheme.textMain38, fontSize: 12)),
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),

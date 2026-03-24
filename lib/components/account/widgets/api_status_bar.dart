@@ -17,7 +17,7 @@ class ApiStatusBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isConnected = accountProvider.hasApiKeys;
     final statusColor = !isConnected 
-        ? Colors.white24 
+        ? AppTheme.textMain24 
         : (accountProvider.credentials!.isMock ? Colors.amber : AppTheme.accentGreen);
 
     return Container(
@@ -47,7 +47,7 @@ class ApiStatusBar extends StatelessWidget {
                     Text(
                       isConnected ? '키움 API 연동됨' : '키움 API 미연동',
                       style: TextStyle(
-                        color: isConnected ? statusColor : Colors.white54,
+                        color: isConnected ? statusColor : AppTheme.textMain54,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
@@ -66,7 +66,7 @@ class ApiStatusBar extends StatelessWidget {
                           ? 'App Key: ${_maskKey(accountProvider.credentials!.appKey)}'
                           : '실시간 데이터를 위해 API를 연동하세요',
                   style: TextStyle(
-                    color: accountProvider.lastError != null ? AppTheme.accentRed : Colors.white.withValues(alpha: 0.4),
+                    color: accountProvider.lastError != null ? AppTheme.accentRed : AppTheme.textMain.withValues(alpha: 0.4),
                     fontSize: 11,
                   ),
                 ),

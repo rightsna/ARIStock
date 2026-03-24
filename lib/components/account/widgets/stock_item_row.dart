@@ -23,9 +23,9 @@ class StockItemRow extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceDark,
+          color: AppTheme.surfaceWhite,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          border: Border.all(color: AppTheme.textMain.withValues(alpha: 0.05)),
         ),
         child: Row(
           children: [
@@ -58,11 +58,11 @@ class StockItemRow extends StatelessWidget {
         children: [
           Text(
             stock.name,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 16),
           ),
           Text(
             '${stock.quantity}주',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
+            style: TextStyle(color: AppTheme.textMain.withValues(alpha: 0.4), fontSize: 12),
           ),
         ],
       ),
@@ -76,12 +76,12 @@ class StockItemRow extends StatelessWidget {
       children: [
         Text(
           format.format(stock.totalCurrentAmount),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold),
         ),
         Text(
           '${profit > 0 ? '+' : ''}${profit.toStringAsFixed(2)}%',
           style: TextStyle(
-            color: profit > 0 ? AppTheme.accentGreen : (profit < 0 ? AppTheme.accentRed : Colors.white54),
+            color: profit > 0 ? AppTheme.accentGreen : (profit < 0 ? AppTheme.accentRed : AppTheme.textMain54),
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),

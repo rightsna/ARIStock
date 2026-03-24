@@ -36,7 +36,7 @@ class _AddStockBottomSheetState extends State<AddStockBottomSheet> {
         right: 24,
       ),
       decoration: const BoxDecoration(
-        color: AppTheme.surfaceDark,
+        color: AppTheme.surfaceWhite,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -45,7 +45,7 @@ class _AddStockBottomSheetState extends State<AddStockBottomSheet> {
         children: [
           const Text(
             '새 종목 추가',
-            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.textMain, fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
           _buildField('종목명', '예: 삼성전자', _nameController),
@@ -81,7 +81,7 @@ class _AddStockBottomSheetState extends State<AddStockBottomSheet> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryBlue,
-                foregroundColor: Colors.white,
+                foregroundColor: AppTheme.textMain,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               child: const Text('추가하기', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -96,17 +96,17 @@ class _AddStockBottomSheetState extends State<AddStockBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 13)),
+        Text(label, style: const TextStyle(color: AppTheme.textMain54, fontSize: 13)),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: AppTheme.textMain),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: Colors.white24),
+            hintStyle: const TextStyle(color: AppTheme.textMain24),
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.05),
+            fillColor: AppTheme.textMain.withValues(alpha: 0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,

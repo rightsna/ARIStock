@@ -41,8 +41,9 @@ lib/
 │   └── ...
 ├── shared/                  # 전역 공통 자원
 │   ├── theme.dart           # 앱 디자인 테마
-│   ├── widgets.dart         # 공용 컴포넌트
-│   └── utils.dart           # 공통 유틸리티
+│   ├── models/              # 전역 공용 데이터 규격
+│   ├── services/            # 전역 공용 로직 및 외부 엔진
+│   └── widgets.dart         # 공용 UI 컴포넌트
 └── main.dart                # 앱의 진입점 및 환경 설정
 ```
 

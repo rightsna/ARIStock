@@ -127,7 +127,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
           ),
         ],
       ),
-      child: const Icon(Icons.vpn_key_rounded, color: Colors.white, size: 36),
+      child: const Icon(Icons.vpn_key_rounded, color: AppTheme.textMain, size: 36),
     );
   }
 
@@ -136,7 +136,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
       '키움 API 연동',
       style: Theme.of(context).textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppTheme.textMain,
           ),
     );
   }
@@ -146,7 +146,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
       '실시간 포트폴리오 데이터를 가져오기 위해\n키움증권 Open API 인증 정보를 입력해주세요.',
       textAlign: TextAlign.center,
       style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.5),
+        color: AppTheme.textMain.withValues(alpha: 0.5),
         fontSize: 14,
         height: 1.5,
       ),
@@ -191,25 +191,25 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceDark,
+        color: AppTheme.surfaceWhite,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: AppTheme.textMain.withValues(alpha: 0.08)),
       ),
       child: TextFormField(
         controller: controller,
         obscureText: obscure,
-        style: const TextStyle(color: Colors.white, fontSize: 15),
+        style: const TextStyle(color: AppTheme.textMain, fontSize: 15),
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          labelStyle: const TextStyle(color: Colors.white54, fontSize: 14),
+          labelStyle: const TextStyle(color: AppTheme.textMain54, fontSize: 14),
           hintStyle: TextStyle(
-              color: Colors.white.withValues(alpha: 0.2), fontSize: 14),
+              color: AppTheme.textMain.withValues(alpha: 0.2), fontSize: 14),
           prefixIcon: Icon(icon, color: AppTheme.primaryBlue, size: 20),
           suffixIcon: IconButton(
             icon: Icon(
               obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-              color: Colors.white38,
+              color: AppTheme.textMain38,
               size: 20,
             ),
             onPressed: onToggleObscure,
@@ -236,7 +236,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
         onPressed: _isSaving ? null : _saveKeys,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.primaryBlue,
-          foregroundColor: Colors.white,
+          foregroundColor: AppTheme.textMain,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -247,7 +247,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
                 width: 24,
                 height: 24,
                 child:
-                    CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    CircularProgressIndicator(color: AppTheme.textMain, strokeWidth: 2),
               )
             : const Text(
                 '연동 시작',
@@ -263,19 +263,19 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
       decoration: BoxDecoration(
         color: _isMock
             ? Colors.amber.withValues(alpha: 0.08)
-            : AppTheme.surfaceDark,
+            : AppTheme.surfaceWhite,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: _isMock
               ? Colors.amber.withValues(alpha: 0.3)
-              : Colors.white.withValues(alpha: 0.08),
+              : AppTheme.textMain.withValues(alpha: 0.08),
         ),
       ),
       child: Row(
         children: [
           Icon(
             _isMock ? Icons.science_rounded : Icons.trending_up_rounded,
-            color: _isMock ? Colors.amber : Colors.white38,
+            color: _isMock ? Colors.amber : AppTheme.textMain38,
             size: 20,
           ),
           const SizedBox(width: 12),
@@ -286,7 +286,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
                 Text(
                   '모의투자',
                   style: TextStyle(
-                    color: _isMock ? Colors.amber : Colors.white70,
+                    color: _isMock ? Colors.amber : AppTheme.textMain70,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -294,7 +294,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
                 Text(
                   _isMock ? 'mockapi.kiwoom.com 사용' : '실전투자 (api.kiwoom.com)',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.35),
+                    color: AppTheme.textMain.withValues(alpha: 0.35),
                     fontSize: 11,
                   ),
                 ),
@@ -334,7 +334,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen>
                     child: Text(
                       '키움증권 Open API 홈페이지에서\nApp Key와 App Secret을 발급받을 수 있습니다.',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: AppTheme.textMain.withValues(alpha: 0.6),
                         fontSize: 12,
                         height: 1.5,
                       ),

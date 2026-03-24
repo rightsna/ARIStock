@@ -30,8 +30,8 @@
   - 응답: `stocks`, `deposit`, `totalAssets`, `profitPercentage`
 - `GET_BRIEFING`
   - 오늘 브리핑 본문 반환
-- `GET_CONSULTATION`
-  - 현재 선택 종목 상담 기록 반환
+- `GET_ANALYSIS`
+  - 현재 선택 종목 분석 기록 반환
 - `GET_PORTFOLIO_REPORT`
   - 최신 포트폴리오 리포트 반환
 - `GET_MARKET_DATA`
@@ -61,7 +61,7 @@
 ### SAVE
 - `SAVE_BRIEFING`
   - Params: `content`
-- `SAVE_CONSULTATION`
+- `SAVE_ANALYSIS`
   - Params: `symbol`, `name`, `content`
 - `SAVE_STRATEGY`
   - Params: `symbol`, `name`, `content`

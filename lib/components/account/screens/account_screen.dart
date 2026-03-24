@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/account_provider.dart';
-import '../../consultation/providers/consultation_provider.dart';
+import '../../analysis/providers/analysis_provider.dart';
 import '../../portfolio/providers/portfolio_provider.dart';
 import '../../../shared/theme.dart';
 import 'api_key_setup_screen.dart';
 import '../widgets/api_status_bar.dart';
 import '../widgets/asset_summary_card.dart';
-import '../widgets/portfolio_diagnosis_card.dart';
 import '../widgets/stock_item_row.dart';
 import '../widgets/add_stock_bottom_sheet.dart';
 
@@ -25,14 +24,14 @@ class AccountScreen extends StatelessWidget {
     final bool hasData = accountProvider.hasApiKeys || portfolioProvider.stocks.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
+      backgroundColor: AppTheme.backgroundLight,
       body: hasData
           ? _buildMainView(context, accountProvider, portfolioProvider)
           : const ApiKeySetupScreen(),
       floatingActionButton: hasData ? FloatingActionButton(
         onPressed: () => _showAddStockSheet(context),
         backgroundColor: AppTheme.primaryBlue,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: AppTheme.textMain),
       ) : null,
     );
   }
@@ -58,13 +57,13 @@ class AccountScreen extends StatelessWidget {
                   children: [
                     const Text(
                       '내 포트폴리오',
-                      style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: AppTheme.textMain, fontSize: 28, fontWeight: FontWeight.bold),
                     ),
                     IconButton(
                       onPressed: accountProvider.isRefreshing ? null : () => accountProvider.manualFetchAccounts(),
                       icon: accountProvider.isRefreshing 
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primaryBlue))
-                          : const Icon(Icons.refresh, color: Colors.white54),
+                          : const Icon(Icons.refresh, color: AppTheme.textMain54),
                     ),
                   ],
                 ),
@@ -82,17 +81,10 @@ class AccountScreen extends StatelessWidget {
                   stockCount: displayStocks.length,
                   format: format,
                 ),
-                if (accountProvider.latestReport != null) ...[
-                  const SizedBox(height: 40),
-                  PortfolioDiagnosisCard(
-                    accountProvider: accountProvider,
-                    report: accountProvider.latestReport!,
-                  ),
-                ],
                 const SizedBox(height: 32),
                 const Text(
                   '보유 종목 내역',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppTheme.textMain, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
               ],
@@ -113,9 +105,9 @@ class AccountScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 40),
             child: Column(
               children: [
-                Icon(Icons.inventory_2_outlined, color: Colors.white.withValues(alpha: 0.1), size: 48),
+                Icon(Icons.inventory_2_outlined, color: AppTheme.textMain.withValues(alpha: 0.1), size: 48),
                 const SizedBox(height: 16),
-                Text('보유 중인 종목이 없습니다.', style: TextStyle(color: Colors.white.withValues(alpha: 0.3))),
+                Text('보유 중인 종목이 없습니다.', style: TextStyle(color: AppTheme.textMain.withValues(alpha: 0.3))),
               ],
             ),
           ),
@@ -138,7 +130,7 @@ class AccountScreen extends StatelessWidget {
                 stock: stock,
                 format: format,
                 onTap: () {
-                  context.read<ConsultationProvider>().selectStock(stock.symbol);
+                  context.read<AnalysisProvider>().selectStock(stock.symbol);
                   DefaultTabController.of(context).animateTo(0);
                 },
               ),
@@ -176,16 +168,16 @@ class AccountScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceDark,
-        title: const Text('API 연동 해제', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.surfaceWhite,
+        title: const Text('API 연동 해제', style: TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold)),
         content: const Text(
           '키움 API 연동을 해제하시겠습니까?\n저장된 App Key와 App Secret이 삭제됩니다.',
-          style: TextStyle(color: Colors.white70, height: 1.5),
+          style: TextStyle(color: AppTheme.textMain70, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소', style: TextStyle(color: Colors.white54)),
+            child: const Text('취소', style: TextStyle(color: AppTheme.textMain54)),
           ),
           TextButton(
             onPressed: () {

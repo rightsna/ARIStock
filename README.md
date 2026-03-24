@@ -36,11 +36,12 @@ lib/
 ├── components/              # 독립된 기능 모듈
 │   ├── account/             # 계좌 및 포트폴리오 관리
 │   ├── briefing/            # 리서치 및 브리핑 세션
-│   ├── consultation/        # 투자 상담 로직
-│   ├── strategy/            # 투자 전략
+│   ├── analysis/            # 종목 분석 로직
 │   └── portfolio/           # 대시보드 및 자산 요약
-├── shared/                  # 전역 공통 자원 (Theme, Widgets)
-├── services/                # 기술적 분석 및 외부 연동 엔진
+├── shared/                  # 전역 공통 자원
+│   ├── theme.dart           # UI 테마
+│   ├── models/              # 공통 데이터 모델
+│   └── services/            # 분석 엔진 및 외부 연동
 └── main.dart                # 앱 진입점
 ```
 
