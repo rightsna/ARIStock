@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../briefing/screens/briefing_screen.dart';
 import '../consultation/screens/consultation_screen.dart';
 import '../strategy/screens/strategy_screen.dart';
 import '../account/screens/account_screen.dart';
@@ -14,7 +13,7 @@ class MainLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: Row(
@@ -62,9 +61,8 @@ class MainLayout extends StatelessWidget {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           bottom: TabBar(
             tabs: const [
-              Tab(text: '브리핑'),
               Tab(text: '종목상담'),
-              Tab(text: '매매전략상담'),
+              Tab(text: '매매전략'),
               Tab(text: '포트폴리오상담'),
             ],
             indicatorColor: AppTheme.primaryBlue,
@@ -92,12 +90,7 @@ class MainLayout extends StatelessWidget {
             ),
           ),
           child: const TabBarView(
-            children: [
-              BriefingScreen(),
-              ConsultationScreen(),
-              StrategyScreen(),
-              AccountScreen(),
-            ],
+            children: [ConsultationScreen(), StrategyScreen(), AccountScreen()],
           ),
         ),
       ),

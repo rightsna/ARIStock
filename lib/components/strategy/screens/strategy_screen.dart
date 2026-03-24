@@ -20,6 +20,8 @@ class StrategyScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _buildIntroBanner(context),
+                  const SizedBox(height: 24),
                   _buildStockSelector(context, provider),
                   const SizedBox(height: 32),
                   if (provider.selectedStrategy != null) ...[
@@ -41,6 +43,49 @@ class StrategyScreen extends StatelessWidget {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildIntroBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryBlue.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primaryBlue.withValues(alpha: 0.1)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.lightbulb_outline, size: 20, color: AppTheme.primaryBlue),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '매매 전략 가이드',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '매매 전략 상담은 주로 자동매매 시스템을 운용할 때 필요한 구체적인 매매 플랜과 대응 시나리오를 설정하는 과정입니다.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -246,12 +291,39 @@ class StrategyScreen extends StatelessWidget {
   Widget _buildResetButton(BuildContext context, StrategyProvider provider) {
     return Center(
       child: TextButton.icon(
-        onPressed: () => provider.clearAll(),
+        onPressed: () => _showResetConfirmDialog(context, provider),
         icon: const Icon(Icons.delete_outline, size: 16, color: Colors.white38),
         label: const Text('데이터 초기화', style: TextStyle(color: Colors.white38, fontSize: 12)),
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),
+      ),
+    );
+  }
+
+  void _showResetConfirmDialog(BuildContext context, StrategyProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceDark,
+        title: const Text('매매 전략 데이터 초기화', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: const Text(
+          '모든 종목의 매매 전략 내역이 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.',
+          style: TextStyle(color: Colors.white70, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () {
+              provider.clearAll();
+              Navigator.pop(ctx);
+            },
+            child: const Text('초기화', style: TextStyle(color: AppTheme.accentRed)),
+          ),
+        ],
       ),
     );
   }

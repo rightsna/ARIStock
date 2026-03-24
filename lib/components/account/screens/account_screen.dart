@@ -139,7 +139,7 @@ class AccountScreen extends StatelessWidget {
                 format: format,
                 onTap: () {
                   context.read<ConsultationProvider>().selectStock(stock.symbol);
-                  DefaultTabController.of(context).animateTo(1);
+                  DefaultTabController.of(context).animateTo(0);
                 },
               ),
             );

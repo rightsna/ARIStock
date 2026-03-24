@@ -196,12 +196,39 @@ class ConsultationScreen extends StatelessWidget {
   Widget _buildResetButton(BuildContext context, ConsultationProvider provider) {
     return Center(
       child: TextButton.icon(
-        onPressed: () => provider.clearAll(),
+        onPressed: () => _showResetConfirmDialog(context, provider),
         icon: const Icon(Icons.delete_outline, size: 16, color: Colors.white38),
         label: const Text('데이터 초기화', style: TextStyle(color: Colors.white38, fontSize: 12)),
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),
+      ),
+    );
+  }
+
+  void _showResetConfirmDialog(BuildContext context, ConsultationProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceDark,
+        title: const Text('상담 데이터 초기화', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: const Text(
+          '모든 종목 상담 내역과 히스토리가 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.',
+          style: TextStyle(color: Colors.white70, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () {
+              provider.clearAll();
+              Navigator.pop(ctx);
+            },
+            child: const Text('초기화', style: TextStyle(color: AppTheme.accentRed)),
+          ),
+        ],
       ),
     );
   }
