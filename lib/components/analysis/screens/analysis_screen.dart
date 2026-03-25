@@ -10,7 +10,9 @@ import '../widgets/analysis_report_header.dart';
 import '../widgets/analysis_checkpoint_card.dart';
 import '../widgets/analysis_info_card.dart';
 import '../widgets/user_note_card.dart';
+import 'package:ari_plugin/ari_plugin.dart';
 import '../../../shared/theme.dart';
+
 
 /// 종목분석 화면: AI 애널리스트가 생성한 구조화된 리포트를 렌더링합니다.
 class AnalysisScreen extends StatefulWidget {
@@ -58,11 +60,21 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                 children: [
                   _buildSectionHeader(selectedStock.name),
                   const SizedBox(height: 16),
-                  AnalysisHistorySelector(
-                    logs: analysisProvider.currentStockLogs,
-                    selectedLog: analysisProvider.selectedLog,
-                    onSelect: (log) => analysisProvider.selectLog(log),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AnalysisHistorySelector(
+                          logs: analysisProvider.currentStockLogs,
+                          selectedLog: analysisProvider.selectedLog,
+                          onSelect: (log) => analysisProvider.selectLog(log),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // AI 신규 분석 요청 버튼 (실제 통신 로직 포함)
+                      _buildRequestAnalysisButton(context, selectedStock.symbol),
+                    ],
                   ),
+
                   if (analysisProvider.selectedLog != null) ...[
                     const SizedBox(height: 24),
                     AnalysisReportHeader(
@@ -118,6 +130,9 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   }
 
   Widget _buildEmptyState() {
+    final watchlistProvider = context.watch<WatchlistProvider>();
+    final symbol = watchlistProvider.selectedSymbol;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.only(top: 80),
@@ -133,19 +148,70 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
               '아직 분석 내역이 없습니다.',
               style: TextStyle(color: AppTheme.textMain54),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'AI 분석을 요청해 보세요.',
-              style: TextStyle(
-                color: AppTheme.textMain38,
-                fontSize: 13,
+            const SizedBox(height: 24),
+            if (symbol != null)
+              _buildRequestAnalysisButton(context, symbol, isLarge: true)
+            else
+              const Text(
+                'AI 분석을 요청해 보세요.',
+                style: TextStyle(
+                  color: AppTheme.textMain38,
+                  fontSize: 13,
+                ),
               ),
-            ),
           ],
         ),
       ),
     );
   }
+
+  // 신규 분석 요청 버튼 빌더
+  Widget _buildRequestAnalysisButton(BuildContext context, String symbol,
+      {bool isLarge = false}) {
+    return ElevatedButton.icon(
+      onPressed: () async {
+        if (WsManager.isConnected) {
+          WsManager.sendAsync('/APP.REPORT', {
+            'appId': 'aristock',
+            'event': 'REQUEST_ANALYSIS',
+            'message': '$symbol 종목에 대한 실시간 시장 상황과 기술적 지표를 분석하여 신규 리포트를 작성해줘.',
+            'params': {'symbol': symbol}
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('AI에게 "$symbol" 신규 분석을 요청했습니다...'),
+              backgroundColor: AppTheme.primaryBlue,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('서버와 연결이 끊겨 있습니다. 상태를 확인해 주세요.'),
+              backgroundColor: AppTheme.accentRed,
+            ),
+          );
+        }
+      },
+      icon: Icon(Icons.auto_awesome, size: isLarge ? 20 : 14),
+      label: Text(
+        'AI 신규 분석',
+        style: TextStyle(fontSize: isLarge ? 14 : 11),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppTheme.primaryBlue,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(
+          horizontal: isLarge ? 24 : 12,
+          vertical: isLarge ? 16 : 8,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(isLarge ? 16 : 8),
+        ),
+        elevation: isLarge ? 2 : 0,
+      ),
+    );
+  }
+
 
   Widget _buildSectionHeader(String stockName) {
     return Row(
@@ -187,7 +253,36 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
         AnalysisCheckPointCard(
           checkPoints: log.checkPoints ?? [],
           onToggle: (point) => analysisProvider.toggleCheckPoint(point),
+          onInvestigate: (point) async {
+            // 상태를 '조사 중'으로 변경
+            await analysisProvider.updateCheckPoint(point, status: 'investigating');
+            
+            // 서버(AI)에 심화 조사 요청 전송 (양방향 통신 활용)
+            if (WsManager.isConnected) {
+            WsManager.sendAsync('/APP.REPORT', {
+                'appId': 'aristock',
+                'event': 'INVESTIGATE_CHECKPOINT',
+                'message': '${log.symbol} 종목의 "${point.content}" 항목에 대해 상세 분석을 수행하고 추가 정보를 리포트해줘.',
+                'params': {
+                  'symbol': log.symbol,
+                  'content': point.content,
+                  'isPositive': point.isPositive,
+                }
+              });
+              
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('AI가 "${point.content}"에 대해 심화 조사를 시작합니다...'),
+                    backgroundColor: AppTheme.primaryBlue,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            }
+          },
         ),
+
         if (log.checkPoints != null && log.checkPoints!.isNotEmpty)
           const SizedBox(height: 24),
         AnalysisInfoCard(

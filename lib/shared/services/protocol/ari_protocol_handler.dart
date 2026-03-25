@@ -86,7 +86,11 @@ class ARIProtocolHandler {
                     .map((p) => {
                           'content': p.content,
                           'impact': p.impact,
-                          'checked': p.isChecked
+                          'checked': p.isChecked,
+                          'status': p.status,
+                          'investigation': p.investigationResult,
+                          'questions': p.relatedQuestions,
+                          'note': p.userNote,
                         })
                     .toList(),
                 'negative': log.checkPoints
@@ -94,7 +98,11 @@ class ARIProtocolHandler {
                     .map((p) => {
                           'content': p.content,
                           'impact': p.impact,
-                          'checked': p.isChecked
+                          'checked': p.isChecked,
+                          'status': p.status,
+                          'investigation': p.investigationResult,
+                          'questions': p.relatedQuestions,
+                          'note': p.userNote,
                         })
                     .toList(),
                 'others': log.otherOpinions,
@@ -257,7 +265,7 @@ class ARIProtocolHandler {
                 await analysisProvider.saveAnalysis(
                   symbol,
                   name,
-                  params['content']?.toString() ?? '', // 호환성 위해 유지하되 UI에서는 안씀
+                  params['content']?.toString() ?? '',
                   shortTermScore: double.tryParse(
                     params['trend_short']?.toString() ?? '',
                   ),
@@ -287,6 +295,38 @@ class ARIProtocolHandler {
                 return {'status': 'success', 'message': 'Analysis saved'};
               }
               return {'status': 'error', 'message': 'Symbol is missing'};
+            case 'UPDATE_CHECKPOINT':
+              final symbol = params['symbol']?.toString();
+              final isPositive = params['isPositive'] as bool? ?? true;
+              final content = params['content']?.toString();
+
+              if (symbol == null || content == null) {
+                return {'status': 'error', 'message': 'Symbol/Content missing'};
+              }
+
+              await analysisProvider.selectStock(symbol);
+              final log = analysisProvider.selectedLog;
+              if (log == null || log.checkPoints == null) {
+                return {'status': 'error', 'message': 'Analysis not found'};
+              }
+
+              final point = log.checkPoints!.firstWhere(
+                (p) => p.content == content && p.isPositive == isPositive,
+                orElse: () => throw Exception('Checkpoint not found'),
+              );
+
+              await analysisProvider.updateCheckPoint(
+                point,
+                isChecked: params['checked'] as bool?,
+                status: params['status']?.toString(),
+                investigationResult: params['investigation']?.toString(),
+                relatedQuestions: params['questions'] is List
+                    ? (params['questions'] as List).cast<String>()
+                    : null,
+                userNote: params['note']?.toString(),
+                impact: params['impact'] as int?,
+              );
+              return {'status': 'success', 'message': 'Checkpoint updated'};
             case 'SAVE_PORTFOLIO_REPORT':
               if (params['content'] != null) {
                 accountProvider.saveReport(params['content'].toString());
@@ -345,7 +385,10 @@ class ARIProtocolHandler {
             'Save a structured stock analysis. [IMPORTANT] DO NOT use Markdown "content" field. Use structured parameters instead. Params: {symbol: String, name: String, summary: String, positive: List<Map{content,impact:1-5}>, negative: List<Map{content,impact:1-5}>, others: String, trend_short: 0.0-1.0, trend_medium: 0.0-1.0, trend_long: 0.0-1.0}',
         'SAVE_PORTFOLIO_REPORT':
             'Save a portfolio diagnosis report. Params: {content: String (Markdown)}',
+        'UPDATE_CHECKPOINT':
+            'Update a specific checkPoint with investigation results or status. Params: {symbol: String, content: String, isPositive: bool, checked?: bool, status?: String, investigation?: String, questions?: List<String>, note?: String, impact?: int}',
       }),
+
     );
   }
 }

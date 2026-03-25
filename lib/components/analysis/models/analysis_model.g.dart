@@ -119,13 +119,17 @@ class AnalysisCheckPointAdapter extends TypeAdapter<AnalysisCheckPoint> {
       isChecked: fields[1] as bool,
       isPositive: fields[2] as bool,
       impact: fields[3] as int?,
+      status: fields[4] as String?,
+      investigationResult: fields[5] as String?,
+      relatedQuestions: (fields[6] as List?)?.cast<String>(),
+      userNote: fields[7] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, AnalysisCheckPoint obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.content)
       ..writeByte(1)
@@ -133,7 +137,15 @@ class AnalysisCheckPointAdapter extends TypeAdapter<AnalysisCheckPoint> {
       ..writeByte(2)
       ..write(obj.isPositive)
       ..writeByte(3)
-      ..write(obj.impact);
+      ..write(obj.impact)
+      ..writeByte(4)
+      ..write(obj.status)
+      ..writeByte(5)
+      ..write(obj.investigationResult)
+      ..writeByte(6)
+      ..write(obj.relatedQuestions)
+      ..writeByte(7)
+      ..write(obj.userNote);
   }
 
   @override

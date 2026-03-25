@@ -106,13 +106,28 @@ class AnalysisProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 체크포인트 체크 여부 토글
-  Future<void> toggleCheckPoint(AnalysisCheckPoint point) async {
+  // 체크포인트 상태 및 조사 결과 업데이트
+  Future<void> updateCheckPoint(
+    AnalysisCheckPoint point, {
+    bool? isChecked,
+    String? status,
+    String? investigationResult,
+    List<String>? relatedQuestions,
+    String? userNote,
+    int? impact,
+  }) async {
     if (_selectedLog == null || _selectedLog!.checkPoints == null) return;
 
     final updatedPoints = _selectedLog!.checkPoints!.map((p) {
       if (p.content == point.content && p.isPositive == point.isPositive) {
-        return p.copyWith(isChecked: !p.isChecked);
+        return p.copyWith(
+          isChecked: isChecked,
+          status: status,
+          investigationResult: investigationResult,
+          relatedQuestions: relatedQuestions,
+          userNote: userNote,
+          impact: impact,
+        );
       }
       return p;
     }).toList();
@@ -121,13 +136,21 @@ class AnalysisProvider with ChangeNotifier {
     await _repository.saveLog(updatedLog);
 
     // UI 동기화
-    final index = _currentStockLogs.indexOf(_selectedLog!);
+    final index = _currentStockLogs.indexWhere(
+      (l) => l.symbol == updatedLog.symbol && l.date == updatedLog.date,
+    );
     if (index != -1) {
       _currentStockLogs[index] = updatedLog;
       _selectedLog = updatedLog;
       notifyListeners();
     }
   }
+
+  // 체크포인트 체크 여부 토글 (기존 호환용)
+  Future<void> toggleCheckPoint(AnalysisCheckPoint point) async {
+    await updateCheckPoint(point, isChecked: !point.isChecked);
+  }
+
 
   // 유저 개인의 매매 메모 저장
   Future<void> updateUserNote(String note) async {

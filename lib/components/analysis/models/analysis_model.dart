@@ -95,22 +95,53 @@ class AnalysisCheckPoint {
   @HiveField(3)
   final int? impact; // 임팩트 팩터 (1~5)
 
+  @HiveField(4)
+  final String? status; // 'pending', 'investigating', 'completed', 'refuted'
+
+  @HiveField(5)
+  final String? investigationResult; // 심화 조사 결과 (Markdown)
+
+  @HiveField(6)
+  final List<String>? relatedQuestions; // 관련 질문 리스트
+
+  @HiveField(7)
+  final String? userNote; // 사용자의 추가 메모
+
   AnalysisCheckPoint({
     required this.content,
     this.isChecked = false,
     required this.isPositive,
-    this.impact = 3, // 기본값 중간 (새 데이터용)
-  });
+    int? impact,
+    this.status = 'pending',
+    this.investigationResult,
+    this.relatedQuestions,
+    this.userNote,
+  }) : impact = impact ?? 3;
 
   // UI용 Getter (기존 데이터 호환을 위해 3 보장)
   int get impactValue => impact ?? 3;
 
-  AnalysisCheckPoint copyWith({bool? isChecked}) {
+  String get currentStatus => status ?? 'pending';
+
+
+  AnalysisCheckPoint copyWith({
+    bool? isChecked,
+    String? status,
+    String? investigationResult,
+    List<String>? relatedQuestions,
+    String? userNote,
+    int? impact,
+  }) {
     return AnalysisCheckPoint(
       content: content,
       isChecked: isChecked ?? this.isChecked,
       isPositive: isPositive,
-      impact: impact,
+      impact: impact ?? this.impact,
+      status: status ?? this.status,
+      investigationResult: investigationResult ?? this.investigationResult,
+      relatedQuestions: relatedQuestions ?? this.relatedQuestions,
+      userNote: userNote ?? this.userNote,
     );
   }
 }
+
