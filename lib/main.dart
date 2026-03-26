@@ -25,7 +25,9 @@ void main(List<String> args) async {
   // 어댑터 등록
   Hive.registerAdapter(AnalysisStockAdapter());
   Hive.registerAdapter(AnalysisLogAdapter());
-  Hive.registerAdapter(AnalysisCheckPointAdapter());
+  Hive.registerAdapter(InvestmentIssueAdapter());
+  Hive.registerAdapter(IssueHistoryAdapter());
+
   Hive.registerAdapter(PortfolioReportAdapter());
   Hive.registerAdapter(StockAdapter());
   Hive.registerAdapter(WatchlistStockAdapter());

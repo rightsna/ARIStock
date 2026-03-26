@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/theme.dart';
 
 class TrendSummaryCard extends StatelessWidget {
-  final double? shortTerm; // 0.0 to 1.0
+  final double? shortTerm;
   final double? mediumTerm;
   final double? longTerm;
 
@@ -16,31 +16,25 @@ class TrendSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceWhite,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.textMain.withValues(alpha: 0.05)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.textMain10, width: 1.5), // 노트 스타일의 실선 테두리
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              Icon(Icons.batch_prediction, color: AppTheme.primaryBlue, size: 18),
+              Icon(Icons.auto_awesome_mosaic_rounded, color: AppTheme.primaryBlue, size: 16),
               SizedBox(width: 8),
               Text(
-                'AI 트렌드 예측 요약',
+                'AI TREND ANALYSIS',
                 style: TextStyle(
-                  color: AppTheme.textMain,
-                  fontSize: 14,
+                  color: AppTheme.textSub,
+                  fontSize: 11,
+                  letterSpacing: 1.0,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -50,9 +44,9 @@ class TrendSummaryCard extends StatelessWidget {
           Row(
             children: [
               Expanded(child: _buildTrendItem('단기', shortTerm ?? 0.78)),
-              _buildDivider(),
+              _buildVerticalDivider(),
               Expanded(child: _buildTrendItem('중기', mediumTerm ?? 0.50)),
-              _buildDivider(),
+              _buildVerticalDivider(),
               Expanded(child: _buildTrendItem('장기', longTerm ?? 0.35)),
             ],
           ),
@@ -67,44 +61,42 @@ class TrendSummaryCard extends StatelessWidget {
     IconData icon;
 
     if (score > 0.6) {
-      sign = '오른다';
+      sign = '강세';
       color = AppTheme.accentRed;
-      icon = Icons.trending_up;
+      icon = Icons.north_east;
     } else if (score < 0.4) {
-      sign = '내린다';
+      sign = '약세';
       color = AppTheme.primaryBlue;
-      icon = Icons.trending_down;
+      icon = Icons.south_east;
     } else {
-      sign = '보합';
+      sign = '중립';
       color = AppTheme.textMain54;
-      icon = Icons.trending_flat;
+      icon = Icons.horizontal_rule;
     }
-
-    final percentage = (score * 100).toInt();
 
     return Column(
       children: [
         Text(
           label,
-          style: const TextStyle(color: AppTheme.textMain54, fontSize: 12),
+          style: const TextStyle(color: AppTheme.textSub, fontSize: 10, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
-        Icon(icon, color: color, size: 24),
+        Icon(icon, color: color, size: 20),
         const SizedBox(height: 8),
         Text(
           sign,
           style: TextStyle(
             color: color,
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 2),
         Text(
-          '$percentage%',
+          '${(score * 100).toInt()}%',
           style: TextStyle(
-            color: color.withValues(alpha: 0.7),
-            fontSize: 13,
+            color: color.withValues(alpha: 0.5),
+            fontSize: 11,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -112,11 +104,11 @@ class TrendSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildVerticalDivider() {
     return Container(
-      height: 40,
-      width: 1,
-      color: AppTheme.textMain.withValues(alpha: 0.05),
+      height: 30,
+      width: 1.5,
+      color: AppTheme.textMain10.withValues(alpha: 0.5),
     );
   }
 }

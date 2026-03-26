@@ -40,4 +40,15 @@ class Stock extends HiveObject {
     if (purchasePrice == 0) return 0;
     return (totalProfit / totalPurchaseAmount) * 100;
   }
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'symbol': symbol,
+      'name': name,
+      'quantity': quantity,
+      'purchasePrice': purchasePrice,
+      'currentPrice': currentPrice,
+    };
+  }
 }
+

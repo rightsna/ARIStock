@@ -63,7 +63,7 @@ class AnalysisLogAdapter extends TypeAdapter<AnalysisLog> {
       summary: fields[6] as String?,
       otherOpinions: fields[7] as String?,
       userNote: fields[8] as String?,
-      checkPoints: (fields[9] as List?)?.cast<AnalysisCheckPoint>(),
+      issues: (fields[9] as List?)?.cast<InvestmentIssue>(),
     );
   }
 
@@ -90,7 +90,7 @@ class AnalysisLogAdapter extends TypeAdapter<AnalysisLog> {
       ..writeByte(8)
       ..write(obj.userNote)
       ..writeByte(9)
-      ..write(obj.checkPoints);
+      ..write(obj.issues);
   }
 
   @override
@@ -104,48 +104,51 @@ class AnalysisLogAdapter extends TypeAdapter<AnalysisLog> {
           typeId == other.typeId;
 }
 
-class AnalysisCheckPointAdapter extends TypeAdapter<AnalysisCheckPoint> {
+class InvestmentIssueAdapter extends TypeAdapter<InvestmentIssue> {
   @override
   final int typeId = 3;
 
   @override
-  AnalysisCheckPoint read(BinaryReader reader) {
+  InvestmentIssue read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return AnalysisCheckPoint(
-      content: fields[0] as String,
-      isChecked: fields[1] as bool,
-      isPositive: fields[2] as bool,
-      impact: fields[3] as int?,
-      status: fields[4] as String?,
-      investigationResult: fields[5] as String?,
-      relatedQuestions: (fields[6] as List?)?.cast<String>(),
-      userNote: fields[7] as String?,
+    return InvestmentIssue(
+      title: fields[0] as String,
+      startDate: fields[1] as String,
+      endDate: fields[2] as String?,
+      isPositive: fields[3] as bool,
+      impact: fields[4] as int,
+      status: fields[5] as String,
+      lastInvestigation: fields[6] as String?,
+      history: (fields[7] as List?)?.cast<IssueHistory>(),
+      isChecked: fields[8] as bool,
     );
   }
 
   @override
-  void write(BinaryWriter writer, AnalysisCheckPoint obj) {
+  void write(BinaryWriter writer, InvestmentIssue obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
-      ..write(obj.content)
+      ..write(obj.title)
       ..writeByte(1)
-      ..write(obj.isChecked)
+      ..write(obj.startDate)
       ..writeByte(2)
-      ..write(obj.isPositive)
+      ..write(obj.endDate)
       ..writeByte(3)
-      ..write(obj.impact)
+      ..write(obj.isPositive)
       ..writeByte(4)
-      ..write(obj.status)
+      ..write(obj.impact)
       ..writeByte(5)
-      ..write(obj.investigationResult)
+      ..write(obj.status)
       ..writeByte(6)
-      ..write(obj.relatedQuestions)
+      ..write(obj.lastInvestigation)
       ..writeByte(7)
-      ..write(obj.userNote);
+      ..write(obj.history)
+      ..writeByte(8)
+      ..write(obj.isChecked);
   }
 
   @override
@@ -154,7 +157,47 @@ class AnalysisCheckPointAdapter extends TypeAdapter<AnalysisCheckPoint> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is AnalysisCheckPointAdapter &&
+      other is InvestmentIssueAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class IssueHistoryAdapter extends TypeAdapter<IssueHistory> {
+  @override
+  final int typeId = 4;
+
+  @override
+  IssueHistory read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return IssueHistory(
+      date: fields[0] as String,
+      content: fields[1] as String,
+      detail: fields[2] as String?,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, IssueHistory obj) {
+    writer
+      ..writeByte(3)
+      ..writeByte(0)
+      ..write(obj.date)
+      ..writeByte(1)
+      ..write(obj.content)
+      ..writeByte(2)
+      ..write(obj.detail);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is IssueHistoryAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

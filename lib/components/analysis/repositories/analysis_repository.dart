@@ -3,7 +3,7 @@ import '../models/analysis_model.dart';
 
 class AnalysisRepository {
   static const String stockBoxName = 'analysis_stock_box';
-  static const String logBoxName = 'analysis_log_box';
+  static const String logBoxName = 'analysis_log_box_v1'; // 단일 로그 체계로 변경된 새로운 박스
 
   Future<Box<AnalysisStock>> _openStockBox() async {
     return await Hive.openBox<AnalysisStock>(stockBoxName);
@@ -24,27 +24,19 @@ class AnalysisRepository {
     return box.values.toList();
   }
 
-  // 분석 로그 관련
+  // 분석 로그 관련 (1종목 1로그 체제)
   Future<void> saveLog(AnalysisLog log) async {
     final box = await _openLogBox();
-    // 키를 '종목_날짜' 형식으로 저장하여 고유성 확보
-    await box.put('${log.symbol}_${log.date}', log);
+    // 심볼을 키로 사용하여 종목당 항상 최신의 단일 리포트(타임라인 포함)를 유지
+    await box.put(log.symbol, log);
   }
 
-  Future<List<AnalysisLog>> getLogsByStock(String stockSymbol) async {
+  Future<AnalysisLog?> getLogByStock(String stockSymbol) async {
     final box = await _openLogBox();
-    return box.values
-        .where((log) => log.symbol == stockSymbol)
-        .toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
+    return box.get(stockSymbol);
   }
 
-  Future<AnalysisLog?> getLatestLog(String stockSymbol) async {
-    final logs = await getLogsByStock(stockSymbol);
-    return logs.isNotEmpty ? logs.first : null;
-  }
-
-  // 모든 분석 데이터 삭제 (내용 비우기)
+  // 모든 분석 데이터 삭제
   Future<void> clearAll() async {
     final sBox = await _openStockBox();
     final lBox = await _openLogBox();
@@ -52,7 +44,7 @@ class AnalysisRepository {
     await lBox.clear();
   }
 
-  // 데이터베이스 완전 삭제 (구조 변경 등으로 오류 발생 시 디스크에서 날림)
+  // 데이터베이스 완전 삭제
   Future<void> forceDeleteFromDisk() async {
     if (Hive.isBoxOpen(stockBoxName)) {
       await Hive.box<AnalysisStock>(stockBoxName).close();

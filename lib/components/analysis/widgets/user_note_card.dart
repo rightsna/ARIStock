@@ -13,6 +13,8 @@ class UserNoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Note: TextEditingController setup is better done in a StatefulWidget 
+    // but for simple cases this works if the parent doesn't rebuild too often.
     final controller = TextEditingController(text: initialNote);
 
     return Column(
@@ -20,14 +22,18 @@ class UserNoteCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.edit_note, size: 18, color: AppTheme.textMain70),
+            Container(
+              width: 3, height: 16,
+              decoration: BoxDecoration(color: AppTheme.textMain38, borderRadius: BorderRadius.circular(2)),
+            ),
             const SizedBox(width: 8),
-            Text(
-              '나의 투자 노트',
+            const Text(
+              '투자 리서치 메모',
               style: TextStyle(
-                color: AppTheme.textMain70,
+                color: AppTheme.textMain,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -35,20 +41,25 @@ class UserNoteCard extends StatelessWidget {
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: AppTheme.surfaceWhite,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.textMain10),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.textMain10, width: 1.5), // 일관된 노트 테두리
           ),
           child: TextField(
             controller: controller,
-            maxLines: 5,
+            maxLines: 6,
             decoration: const InputDecoration(
-              hintText: '이 종목에 대한 나만의 생각이나 매매 계획을 기록하세요...',
+              hintText: '이슈 분석 결과에 따른 나만의 매매 계획이나 관점을 기록하세요...',
               hintStyle: TextStyle(color: AppTheme.textMain24, fontSize: 13),
-              contentPadding: EdgeInsets.all(16),
+              contentPadding: EdgeInsets.all(20),
               border: InputBorder.none,
             ),
-            style: const TextStyle(color: AppTheme.textMain, fontSize: 14),
+            style: const TextStyle(
+              color: AppTheme.textMain,
+              fontSize: 14,
+              height: 1.6,
+              fontWeight: FontWeight.w400,
+            ),
             onChanged: onChanged,
           ),
         ),

@@ -5,10 +5,10 @@ part 'analysis_model.g.dart';
 @HiveType(typeId: 1)
 class AnalysisStock {
   @HiveField(0)
-  final String symbol; // 종목 코드 또는 심볼
+  final String symbol;
 
   @HiveField(1)
-  final String name; // 종목 이름
+  final String name;
 
   AnalysisStock({
     required this.symbol,
@@ -19,34 +19,34 @@ class AnalysisStock {
 @HiveType(typeId: 2)
 class AnalysisLog {
   @HiveField(0)
-  final String symbol; // 연결된 종목 심볼
+  final String symbol;
 
   @HiveField(1)
-  final String date; // 분석 일자 (YYYY-MM-DD)
+  final String date;
 
   @HiveField(2)
-  final String content; // 전체 내용 (호환성 유지용)
+  final String content;
 
   @HiveField(3)
-  final double? shortTermScore; // 단기 예측 점수 (0.0~1.0)
+  final double? shortTermScore;
 
   @HiveField(4)
-  final double? mediumTermScore; // 중기 예측 점수 (0.0~1.0)
+  final double? mediumTermScore;
 
   @HiveField(5)
-  final double? longTermScore; // 장기 예측 점수 (0.0~1.0)
+  final double? longTermScore;
 
   @HiveField(6)
-  final String? summary; // 분석 요약
+  final String? summary;
 
   @HiveField(7)
-  final String? otherOpinions; // 기타 의견
+  final String? otherOpinions;
 
   @HiveField(8)
-  final String? userNote; // 사용자가 직접 쓴 노트
+  final String? userNote;
 
   @HiveField(9)
-  final List<AnalysisCheckPoint>? checkPoints; // 구조화된 체크포인트
+  final List<InvestmentIssue>? issues;
 
   AnalysisLog({
     required this.symbol,
@@ -58,13 +58,51 @@ class AnalysisLog {
     this.summary,
     this.otherOpinions,
     this.userNote,
-    this.checkPoints,
+    this.issues,
   });
 
-  // 유저 노트를 업데이트하거나 체크포인트를 토글하기 위한 복사 메서드
+  factory AnalysisLog.fromMap(Map<String, dynamic> map) {
+    return AnalysisLog(
+      symbol: map['symbol'] ?? '',
+      date: map['date'] ?? DateTime.now().toString().split(' ')[0],
+      content: map['content'] ?? '',
+      shortTermScore: _toDouble(map['shortTermScore']),
+      mediumTermScore: _toDouble(map['mediumTermScore']),
+      longTermScore: _toDouble(map['longTermScore']),
+      summary: map['summary'],
+      otherOpinions: map['otherOpinions'],
+      userNote: map['userNote'],
+      issues: map['issues'] != null 
+          ? (map['issues'] as List).map((i) => InvestmentIssue.fromMap(Map<String, dynamic>.from(i))).toList()
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'symbol': symbol,
+      'date': date,
+      'content': content,
+      'shortTermScore': shortTermScore,
+      'mediumTermScore': mediumTermScore,
+      'longTermScore': longTermScore,
+      'summary': summary,
+      'otherOpinions': otherOpinions,
+      'userNote': userNote,
+      'issues': issues?.map((i) => i.toMap()).toList(),
+    };
+  }
+
+  static double? _toDouble(dynamic val) {
+    if (val == null) return null;
+    if (val is double) return val;
+    if (val is int) return val.toDouble();
+    return double.tryParse(val.toString());
+  }
+
   AnalysisLog copyWith({
     String? userNote,
-    List<AnalysisCheckPoint>? checkPoints,
+    List<InvestmentIssue>? issues,
   }) {
     return AnalysisLog(
       symbol: symbol,
@@ -76,72 +114,136 @@ class AnalysisLog {
       summary: summary,
       otherOpinions: otherOpinions,
       userNote: userNote ?? this.userNote,
-      checkPoints: checkPoints ?? this.checkPoints,
+      issues: issues ?? this.issues,
     );
   }
 }
 
 @HiveType(typeId: 3)
-class AnalysisCheckPoint {
+class InvestmentIssue {
   @HiveField(0)
-  final String content; // 체크포인트 내용
+  final String title;
 
   @HiveField(1)
-  final bool isChecked; // 확인 여부
+  final String startDate;
 
   @HiveField(2)
-  final bool isPositive; // true: 상승관점(긍정), false: 하락관점(부정)
+  final String? endDate;
 
   @HiveField(3)
-  final int? impact; // 임팩트 팩터 (1~5)
+  final bool isPositive;
 
   @HiveField(4)
-  final String? status; // 'pending', 'investigating', 'completed', 'refuted'
+  final int impact;
 
   @HiveField(5)
-  final String? investigationResult; // 심화 조사 결과 (Markdown)
+  final String status;
 
   @HiveField(6)
-  final List<String>? relatedQuestions; // 관련 질문 리스트
+  final String? lastInvestigation;
 
   @HiveField(7)
-  final String? userNote; // 사용자의 추가 메모
+  final List<IssueHistory>? history;
 
-  AnalysisCheckPoint({
-    required this.content,
-    this.isChecked = false,
+  @HiveField(8)
+  final bool isChecked;
+
+  InvestmentIssue({
+    required this.title,
+    required this.startDate,
+    this.endDate,
     required this.isPositive,
-    int? impact,
-    this.status = 'pending',
-    this.investigationResult,
-    this.relatedQuestions,
-    this.userNote,
-  }) : impact = impact ?? 3;
+    this.impact = 3,
+    this.status = 'active',
+    this.lastInvestigation,
+    this.history,
+    this.isChecked = false,
+  });
 
-  // UI용 Getter (기존 데이터 호환을 위해 3 보장)
-  int get impactValue => impact ?? 3;
+  factory InvestmentIssue.fromMap(Map<String, dynamic> map) {
+    return InvestmentIssue(
+      title: map['title'] ?? '',
+      startDate: map['startDate'] ?? DateTime.now().toString().split(' ')[0],
+      endDate: map['endDate'],
+      isPositive: map['isPositive'] ?? true,
+      impact: map['impact'] ?? 3,
+      status: map['status'] ?? 'active',
+      lastInvestigation: map['lastInvestigation'],
+      history: map['history'] != null
+          ? (map['history'] as List).map((h) => IssueHistory.fromMap(Map<String, dynamic>.from(h))).toList()
+          : null,
+      isChecked: map['isChecked'] ?? false,
+    );
+  }
 
-  String get currentStatus => status ?? 'pending';
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'startDate': startDate,
+      'endDate': endDate,
+      'isPositive': isPositive,
+      'impact': impact,
+      'status': status,
+      'lastInvestigation': lastInvestigation,
+      'history': history?.map((h) => h.toMap()).toList(),
+      'isChecked': isChecked,
+    };
+  }
 
+  bool get isResolved => status == 'resolved' || endDate != null;
 
-  AnalysisCheckPoint copyWith({
-    bool? isChecked,
+  InvestmentIssue copyWith({
+    String? endDate,
     String? status,
-    String? investigationResult,
-    List<String>? relatedQuestions,
-    String? userNote,
+    String? lastInvestigation,
+    List<IssueHistory>? history,
+    bool? isChecked,
     int? impact,
   }) {
-    return AnalysisCheckPoint(
-      content: content,
-      isChecked: isChecked ?? this.isChecked,
+    return InvestmentIssue(
+      title: title,
+      startDate: startDate,
+      endDate: endDate ?? this.endDate,
       isPositive: isPositive,
       impact: impact ?? this.impact,
       status: status ?? this.status,
-      investigationResult: investigationResult ?? this.investigationResult,
-      relatedQuestions: relatedQuestions ?? this.relatedQuestions,
-      userNote: userNote ?? this.userNote,
+      lastInvestigation: lastInvestigation ?? this.lastInvestigation,
+      history: history ?? this.history,
+      isChecked: isChecked ?? this.isChecked,
     );
   }
 }
 
+@HiveType(typeId: 4)
+class IssueHistory {
+  @HiveField(0)
+  final String date;
+
+  @HiveField(1)
+  final String content;
+
+  @HiveField(2)
+  final String? detail;
+
+  IssueHistory({
+    required this.date,
+    required this.content,
+    this.detail,
+  });
+
+  factory IssueHistory.fromMap(Map<String, dynamic> map) {
+    return IssueHistory(
+      date: map['date'] ?? DateTime.now().toString().split(' ')[0],
+      content: map['content'] ?? '',
+      detail: map['detail'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'date': date,
+      'content': content,
+      'detail': detail,
+    };
+  }
+}

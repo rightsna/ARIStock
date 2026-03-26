@@ -22,4 +22,13 @@ class WatchlistStock extends HiveObject {
     this.isHolding = false,
     DateTime? addedAt,
   }) : addedAt = addedAt ?? DateTime.now();
+
+  Map<String, dynamic> toMap() {
+    return {
+      'symbol': symbol,
+      'name': name,
+      'isHolding': isHolding,
+      'addedAt': addedAt.toIso8601String(),
+    };
+  }
 }
