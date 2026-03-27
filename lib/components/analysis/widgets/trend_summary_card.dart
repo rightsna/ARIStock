@@ -5,12 +5,14 @@ class TrendSummaryCard extends StatelessWidget {
   final double? shortTerm;
   final double? mediumTerm;
   final double? longTerm;
+  final String? summary;
 
   const TrendSummaryCard({
     super.key,
     this.shortTerm,
     this.mediumTerm,
     this.longTerm,
+    this.summary,
   });
 
   @override
@@ -50,6 +52,24 @@ class TrendSummaryCard extends StatelessWidget {
               Expanded(child: _buildTrendItem('장기', longTerm ?? 0.35)),
             ],
           ),
+          if (summary != null && summary!.isNotEmpty) ...[
+            const SizedBox(height: 32),
+            const Row(
+              children: [
+                Icon(Icons.lightbulb_outline_rounded, color: AppTheme.primaryBlue, size: 16),
+                SizedBox(width: 8),
+                Text(
+                  '종합 전망 요약',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              summary!,
+              style: const TextStyle(fontSize: 13, color: AppTheme.textSub, height: 1.6),
+            ),
+          ],
         ],
       ),
     );

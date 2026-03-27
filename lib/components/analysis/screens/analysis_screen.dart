@@ -12,7 +12,6 @@ import '../../../shared/theme.dart';
 import '../widgets/trend_summary_card.dart';
 import '../widgets/analysis_report_header.dart';
 import 'gantt/analysis_issue_gantt.dart';
-import '../widgets/analysis_info_card.dart';
 import '../widgets/user_note_card.dart';
 import 'issue/issue_detail_sheet.dart';
 import 'issue/add_issue_request_dialog.dart';
@@ -119,6 +118,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
           shortTerm: log.shortTermScore,
           mediumTerm: log.mediumTermScore,
           longTerm: log.longTermScore,
+          summary: log.summary,
         ),
         const SizedBox(height: 32),
         AnalysisIssueGantt(
@@ -126,13 +126,6 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
           onIssueTap: (issue) =>
               _showDetails(context, stock.symbol, issue, provider),
           onAddRequest: () => _showAddRequest(context, stock.symbol),
-        ),
-        const SizedBox(height: 32),
-        AnalysisInfoCard(
-          title: '종합 전망 요약',
-          content: log.summary ?? '',
-          icon: Icons.lightbulb_outline,
-          themeColor: AppTheme.primaryBlue,
         ),
         const SizedBox(height: 32),
         UserNoteCard(

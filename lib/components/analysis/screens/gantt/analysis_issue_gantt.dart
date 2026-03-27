@@ -31,6 +31,13 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
   final double _rowHeight = 85.0;
   final double _titleWidth = 160.0;
   final Set<String> _expandedIssueTitles = {};
+  final ScrollController _horizontalController = ScrollController();
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    super.dispose();
+  }
 
   double _getRowHeight(InvestmentIssue issue) {
     final isAiUpdated = issue.isAiModified || issue.isAiAdded;
@@ -182,42 +189,49 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
             onRejectHistory: (issue, history) => context.read<AnalysisProvider>().rejectHistoryUpdate(issue, history),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: SizedBox(
-                width: chartWidth,
-                child: Column(
-                  children: [
-                    GanttTimeAxis(
-                      startDate: _startDate,
-                      totalDays: _totalDays,
-                      dayWidth: _dayWidth,
-                    ),
-                    ...widget.issues.map((issue) {
-                      final isAiUpdated = issue.isAiModified || issue.isAiAdded;
-                      return GanttRow(
-                        issue: issue,
+            child: Scrollbar(
+              controller: _horizontalController,
+              thumbVisibility: true,
+              thickness: 8,
+              radius: const Radius.circular(4),
+              child: SingleChildScrollView(
+                controller: _horizontalController,
+                scrollDirection: Axis.horizontal,
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  width: chartWidth,
+                  child: Column(
+                    children: [
+                      GanttTimeAxis(
                         startDate: _startDate,
-                        dayWidth: _dayWidth,
-                        rowHeight: _rowHeight,
                         totalDays: _totalDays,
-                        isExpanded: _expandedIssueTitles.contains(issue.title) || isAiUpdated,
-                        onIssueTap: widget.onIssueTap,
-                        getRowHeight: _getRowHeight,
-                        onApprove: (issue) {
-                          setState(() => _expandedIssueTitles.add(issue.title));
-                          context.read<AnalysisProvider>().approveIssueUpdate(issue);
-                        },
-                        onReject: (issue) => context.read<AnalysisProvider>().rejectIssueUpdate(issue),
-                        onApproveHistory: (issue, history) {
-                          setState(() => _expandedIssueTitles.add(issue.title));
-                          context.read<AnalysisProvider>().approveHistoryUpdate(issue, history);
-                        },
-                        onRejectHistory: (issue, history) => context.read<AnalysisProvider>().rejectHistoryUpdate(issue, history),
-                      );
-                    }),
-                  ],
+                        dayWidth: _dayWidth,
+                      ),
+                      ...widget.issues.map((issue) {
+                        final isAiUpdated = issue.isAiModified || issue.isAiAdded;
+                        return GanttRow(
+                          issue: issue,
+                          startDate: _startDate,
+                          dayWidth: _dayWidth,
+                          rowHeight: _rowHeight,
+                          totalDays: _totalDays,
+                          isExpanded: _expandedIssueTitles.contains(issue.title) || isAiUpdated,
+                          onIssueTap: widget.onIssueTap,
+                          getRowHeight: _getRowHeight,
+                          onApprove: (issue) {
+                            setState(() => _expandedIssueTitles.add(issue.title));
+                            context.read<AnalysisProvider>().approveIssueUpdate(issue);
+                          },
+                          onReject: (issue) => context.read<AnalysisProvider>().rejectIssueUpdate(issue),
+                          onApproveHistory: (issue, history) {
+                            setState(() => _expandedIssueTitles.add(issue.title));
+                            context.read<AnalysisProvider>().approveHistoryUpdate(issue, history);
+                          },
+                          onRejectHistory: (issue, history) => context.read<AnalysisProvider>().rejectHistoryUpdate(issue, history),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
               ),
             ),

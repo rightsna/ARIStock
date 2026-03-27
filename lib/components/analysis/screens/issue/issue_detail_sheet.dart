@@ -53,13 +53,13 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
                   children: [
                     _buildMetaInfo(),
                     const SizedBox(height: 24),
+                    _buildHistoryTimeline(),
+                    const SizedBox(height: 32),
                     const Text('최신 조사 결과', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
                     const SizedBox(height: 8),
                     MarkdownBody(data: widget.issue.lastInvestigation ?? '상세 조사 내용이 아직 없습니다.'),
                     const SizedBox(height: 32),
                     _buildCollaborationInput(),
-                    const SizedBox(height: 32),
-                    _buildHistoryTimeline(),
                   ],
                 ),
               ),
@@ -179,37 +179,60 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
   }
 
   Widget _buildCollaborationInput() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.textMain10, width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.auto_awesome, size: 14, color: AppTheme.primaryBlue),
-              SizedBox(width: 8),
-              Text('AI 입체 분석 요청', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _requestController,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: '이슈의 특정 부분을 수정하거나 더 분석해달라고 요청하세요...',
-              hintStyle: TextStyle(fontSize: 12, color: AppTheme.textMain24),
-              border: InputBorder.none,
-              isDense: true,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(Icons.auto_awesome, size: 14, color: AppTheme.primaryBlue),
+            SizedBox(width: 8),
+            Text('AI 입체 분석 요청', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textMain)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceWhite,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.textMain10, width: 1.5),
+                ),
+                child: TextField(
+                  controller: _requestController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    hintText: '이슈의 특정 부분을 수정하거나 더 분석해달라고 요청하세요...',
+                    hintStyle: TextStyle(fontSize: 12, color: AppTheme.textMain24),
+                    border: InputBorder.none,
+                    isDense: true,
+                  ),
+                  style: const TextStyle(fontSize: 13, height: 1.5),
+                ),
+              ),
             ),
-            style: const TextStyle(fontSize: 13, height: 1.5),
-          ),
-        ],
-      ),
+            const SizedBox(width: 12),
+            SizedBox(
+              height: 56,
+              width: 56,
+              child: ElevatedButton(
+                onPressed: _sendAIRequest,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: const Icon(Icons.send_rounded, size: 20),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -264,39 +287,24 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {
-              widget.provider.toggleIssueResolved(widget.issue);
-              Navigator.pop(context);
-            },
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              foregroundColor: widget.issue.isResolved ? AppTheme.textMain54 : AppTheme.accentGreen,
-              side: BorderSide(color: widget.issue.isResolved ? AppTheme.textMain10 : AppTheme.accentGreen),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(widget.issue.isResolved ? '이슈 재활성화' : '이슈 종료 처리'),
-          ),
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: () {
+          widget.provider.toggleIssueResolved(widget.issue);
+          Navigator.pop(context);
+        },
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          foregroundColor: widget.issue.isResolved ? AppTheme.textMain54 : AppTheme.accentGreen,
+          side: BorderSide(color: widget.issue.isResolved ? AppTheme.textMain10 : AppTheme.accentGreen),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          flex: 2,
-          child: ElevatedButton(
-            onPressed: _sendAIRequest,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryBlue,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-            ),
-            child: const Text('AI 상세 분석 지시'),
-          ),
+        child: Text(
+          widget.issue.isResolved ? '이슈 재활성화 (Active 전환)' : '이슈 종료 처리 (Resolved 전환)',
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-      ],
+      ),
     );
   }
 

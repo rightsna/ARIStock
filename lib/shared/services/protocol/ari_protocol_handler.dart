@@ -79,11 +79,11 @@ class ARIProtocolHandler {
   Map<String, String> _getCommands() {
     return {
       // --- 투자 분석 및 기록 (Living Timeline) ---
-      'SAVE_ANALYSIS_SUMMARY': '종목의 핵심 투자 가설, 분석 본문 및 투자 점수 기록 [params: symbol, content(Markdown), shortTermScore(0-100), summary(한줄요약)]',
-      'SAVE_ANALYSIS_ISSUES': '종목의 주요 투자 이슈(재료) 리스트 일괄 등록 및 병합 [params: symbol, issues: List<{title, isPositive, impact(1-5), status}>]',
-      'UPDATE_ISSUE_PROGRESS': '기존에 등록된 특정 이슈의 진행 상황(히스토리) 및 상태 추가 업데이트 [params: symbol, issueTitle, history: {date, content, detail}, status?]',
-      'GET_ANALYSIS_FULL': '특정 종목의 전체 분석 히스토리, 점수, 모든 이슈 내역 조회 [params: symbol]',
-      'GET_ANALYSIS_RECENT': '특정 종목의 최신 요약 정보 및 점수만 간략히 조회 [params: symbol]',
+      'SAVE_ANALYSIS_SUMMARY': '종목의 핵심 투자 가설, 분석 본문 및 3단계 투자 점수(단/중/장기) 기록 [params: symbol, content(Markdown), shortTermScore(0-1), mediumTermScore(0-1), longTermScore(0-1), summary(한줄요약)]',
+      'SAVE_ANALYSIS_ISSUES': '종목의 주요 투자 이슈(재료) 리스트 일괄 등록 및 병합. 신규 추가 시 자동 하이라이팅 적용 [params: symbol, issues: List<{title, isPositive, impact(1-5), status}>]',
+      'UPDATE_ISSUE_PROGRESS': '기존 이슈의 히스토리 추가 및 상태 업데이트. AI 탐지 시 타임라인 상에 시각적 강조 표시 [params: symbol, issueTitle, history: {date, content, detail}, status?]',
+      'GET_ANALYSIS_FULL': '특정 종목의 상시 분석 요약, 3단계 점수, 모든 이슈 타임라인 내역 조회 [params: symbol]',
+      'GET_ANALYSIS_RECENT': '특정 종목의 최신 요약 및 핵심 점수(단기) 간략 조회 [params: symbol]',
 
       // --- 계정 및 시장 데이터 ---
       'GET_ACCOUNT_INFO': '연동된 계좌의 자산 총액 및 실보유 종목(평균가, 수량, 수익률 포함) 리스트 조회 [no params]',
