@@ -11,11 +11,11 @@ import '../../../shared/theme.dart';
 // 리팩토링된 위젯들
 import '../widgets/trend_summary_card.dart';
 import '../widgets/analysis_report_header.dart';
-import '../widgets/analysis_issue_gantt.dart';
+import 'gantt/analysis_issue_gantt.dart';
 import '../widgets/analysis_info_card.dart';
 import '../widgets/user_note_card.dart';
-import '../widgets/issue_detail_sheet.dart';
-import '../widgets/add_issue_request_dialog.dart';
+import 'issue/issue_detail_sheet.dart';
+import 'issue/add_issue_request_dialog.dart';
 import '../widgets/analysis_state_views.dart';
 
 /// 종목분석 화면: 단일 종목에 대한 통합 투자 이슈 매니지먼트를 담당합니다 (Living Report).

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:ari_plugin/ari_plugin.dart';
-import '../models/analysis_model.dart';
-import '../providers/analysis_provider.dart';
-import '../../../shared/theme.dart';
+import '../../models/analysis_model.dart';
+import '../../providers/analysis_provider.dart';
+import '../../../../shared/theme.dart';
 
 class IssueDetailSheet extends StatefulWidget {
   final String symbol;
