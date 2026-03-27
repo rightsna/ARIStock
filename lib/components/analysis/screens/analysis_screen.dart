@@ -11,11 +11,11 @@ import '../../../shared/theme.dart';
 // 리팩토링된 위젯들
 import '../widgets/trend_summary_card.dart';
 import '../widgets/analysis_report_header.dart';
-import '../widgets/analysis_issue_gantt.dart';
+import 'gantt/analysis_issue_gantt.dart';
 import '../widgets/analysis_info_card.dart';
 import '../widgets/user_note_card.dart';
-import '../widgets/issue_detail_sheet.dart';
-import '../widgets/add_issue_request_dialog.dart';
+import 'issue/issue_detail_sheet.dart';
+import 'issue/add_issue_request_dialog.dart';
 import '../widgets/analysis_state_views.dart';
 
 /// 종목분석 화면: 단일 종목에 대한 통합 투자 이슈 매니지먼트를 담당합니다 (Living Report).
@@ -180,19 +180,39 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   }
 
   Widget _buildDebugTools(AnalysisProvider provider, dynamic stock) {
-    return Center(
-      child: TextButton.icon(
-        onPressed: () => provider.loadSampleTimeline(stock.symbol, stock.name),
-        icon: const Icon(
-          Icons.playlist_add_check_circle_rounded,
-          size: 16,
-          color: Colors.blue,
+    return Column(
+      children: [
+        Center(
+          child: TextButton.icon(
+            onPressed: () => provider.loadSampleTimeline(stock.symbol, stock.name),
+            icon: const Icon(
+              Icons.playlist_add_check_circle_rounded,
+              size: 16,
+              color: Colors.blue,
+            ),
+            label: const Text(
+              'DEBUG: 복합 간트 차트 샘플 생성',
+              style: TextStyle(color: Colors.blue, fontSize: 12),
+            ),
+          ),
         ),
-        label: const Text(
-          'DEBUG: 복합 간트 차트 샘플 생성',
-          style: TextStyle(color: Colors.blue, fontSize: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton.icon(
+              onPressed: () => provider.toggleAiModificationDebug(),
+              icon: const Icon(Icons.edit_note, size: 16, color: Colors.deepPurple),
+              label: const Text('DEBUG: AI 이슈 수정 토글', style: TextStyle(color: Colors.deepPurple, fontSize: 11)),
+            ),
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: () => provider.toggleAiAdditionDebug(),
+              icon: const Icon(Icons.add_box_outlined, size: 16, color: Colors.indigo),
+              label: const Text('DEBUG: AI 이슈 추가 토글', style: TextStyle(color: Colors.indigo, fontSize: 11)),
+            ),
+          ],
         ),
-      ),
+      ],
     );
   }
 

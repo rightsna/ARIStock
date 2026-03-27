@@ -58,6 +58,7 @@ class AnalysisProvider with ChangeNotifier {
             date: DateTime.now().toString().split(' ')[0],
             content: 'AI 업데이트: ${newIssue.title}',
             detail: '분석 내용이 최신 상태로 갱신되었습니다.',
+            isAiAdded: true, // 강조 플래그 추가
           ));
 
           mergedIssues[existingIndex] = existing.copyWith(
@@ -65,9 +66,11 @@ class AnalysisProvider with ChangeNotifier {
             history: currentHistory,
             status: newIssue.status != 'active' ? newIssue.status : existing.status,
             impact: newIssue.impact,
+            isAiModified: true, // 수정됨 강조 플래그
           );
         } else {
-          mergedIssues.add(newIssue);
+          // 완전히 새로운 이슈인 경우
+          mergedIssues.add(newIssue.copyWith(isAiAdded: true));
         }
       }
     }
@@ -126,11 +129,14 @@ class AnalysisProvider with ChangeNotifier {
       if (normalize(i.title) == normalizedSearchTitle) {
         found = true;
         final currentHistory = List<IssueHistory>.from(i.history ?? []);
-        if (history != null) currentHistory.add(history);
+        if (history != null) {
+          currentHistory.add(history.copyWith(isAiAdded: true));
+        }
         
         return i.copyWith(
           history: currentHistory,
           status: newStatus ?? (history != null ? 'evolving' : i.status),
+          isAiModified: true, // AI에 의해 수정됨
         );
       }
       return i;
@@ -143,7 +149,8 @@ class AnalysisProvider with ChangeNotifier {
         startDate: DateTime.now().toString().split(' ')[0],
         isPositive: true, // 기본값
         status: newStatus ?? 'active',
-        history: history != null ? [history] : [],
+        history: history != null ? [history.copyWith(isAiAdded: true)] : [],
+        isAiAdded: true, // AI에 의해 새로 추가됨
       );
       updatedIssues.add(newIssue);
     }
@@ -212,6 +219,123 @@ class AnalysisProvider with ChangeNotifier {
     );
   }
 
+  Future<void> deleteIssue(InvestmentIssue issue) async {
+    if (_selectedLog == null || _selectedLog!.issues == null) return;
+    
+    final updatedIssues = _selectedLog!.issues!.where((i) => 
+      !(i.title == issue.title && i.isPositive == issue.isPositive)
+    ).toList();
+
+    final updatedLog = _selectedLog!.copyWith(issues: updatedIssues);
+    await _repository.saveLog(updatedLog);
+    _selectedLog = updatedLog;
+    notifyListeners();
+  }
+
+  Future<void> approveIssueUpdate(InvestmentIssue issue) async {
+    if (_selectedLog == null || _selectedLog!.issues == null) return;
+    
+    final updatedIssues = _selectedLog!.issues!.map((i) {
+      if (i.title == issue.title && i.isPositive == issue.isPositive) {
+        return i.copyWith(
+          isAiAdded: false,
+          isAiModified: false,
+          history: i.history?.map((h) => h.copyWith(isAiAdded: false)).toList(),
+        );
+      }
+      return i;
+    }).toList();
+
+    final updatedLog = _selectedLog!.copyWith(issues: updatedIssues);
+    await _repository.saveLog(updatedLog);
+    _selectedLog = updatedLog;
+    notifyListeners();
+  }
+
+  Future<void> rejectIssueUpdate(InvestmentIssue issue) async {
+    if (_selectedLog == null || _selectedLog!.issues == null) return;
+    
+    if (issue.isAiAdded) {
+      await deleteIssue(issue);
+      return;
+    }
+
+    // 수정된 항목이라면 강조를 끄고 최근 AI 히스토리를 삭제하거나 함
+    final updatedIssues = _selectedLog!.issues!.map((i) {
+      if (i.title == issue.title && i.isPositive == issue.isPositive) {
+        final filteredHistory = i.history?.where((h) => !h.isAiAdded).toList();
+        return i.copyWith(
+          isAiModified: false,
+          history: filteredHistory,
+        );
+      }
+      return i;
+    }).toList();
+
+    final updatedLog = _selectedLog!.copyWith(issues: updatedIssues);
+    await _repository.saveLog(updatedLog);
+    _selectedLog = updatedLog;
+    notifyListeners();
+  }
+
+  Future<void> approveHistoryUpdate(InvestmentIssue issue, IssueHistory history) async {
+    if (_selectedLog == null || _selectedLog!.issues == null) return;
+    
+    final updatedIssues = _selectedLog!.issues!.map((i) {
+      if (i.title == issue.title && i.isPositive == issue.isPositive) {
+        final updatedHistory = i.history?.map((h) {
+          if (h.date == history.date && h.content == history.content) {
+            return h.copyWith(isAiAdded: false);
+          }
+          return h;
+        }).toList();
+        
+        // 만약 모든 AI 히스토리가 승인되면 이슈의 isAiModified도 해제할 수 있음
+        final hasAnyAiHistory = updatedHistory?.any((h) => h.isAiAdded) ?? false;
+
+        return i.copyWith(
+          history: updatedHistory,
+          isAiModified: hasAnyAiHistory,
+        );
+      }
+      return i;
+    }).toList();
+
+    final updatedLog = _selectedLog!.copyWith(issues: updatedIssues);
+    await _repository.saveLog(updatedLog);
+    _selectedLog = updatedLog;
+    notifyListeners();
+  }
+
+  Future<void> rejectHistoryUpdate(InvestmentIssue issue, IssueHistory history) async {
+    await deleteHistoryItem(issue, history);
+  }
+
+  Future<void> deleteHistoryItem(InvestmentIssue issue, IssueHistory history) async {
+    if (_selectedLog == null || _selectedLog!.issues == null) return;
+    
+    final updatedIssues = _selectedLog!.issues!.map((i) {
+      if (i.title == issue.title && i.isPositive == issue.isPositive) {
+        final filteredHistory = i.history?.where((h) => 
+          !(h.date == history.date && h.content == history.content && h.detail == history.detail)
+        ).toList();
+        
+        final hasAnyAiHistory = filteredHistory?.any((h) => h.isAiAdded) ?? false;
+        
+        return i.copyWith(
+          history: filteredHistory,
+          isAiModified: hasAnyAiHistory,
+        );
+      }
+      return i;
+    }).toList();
+
+    final updatedLog = _selectedLog!.copyWith(issues: updatedIssues);
+    await _repository.saveLog(updatedLog);
+    _selectedLog = updatedLog;
+    notifyListeners();
+  }
+
   Future<void> updateUserNote(String note) async {
     if (_selectedLog == null) return;
     final updatedLog = _selectedLog!.copyWith(userNote: note);
@@ -225,6 +349,68 @@ class AnalysisProvider with ChangeNotifier {
     _stocks = [];
     _selectedLog = null;
     notifyListeners();
+  }
+
+  // DEBUG: AI 수정 모드 토글 (실제 통신 로직을 타도록 수정)
+  void toggleAiModificationDebug() {
+    if (_selectedLog == null || _selectedLog!.issues == null || _selectedLog!.issues!.isEmpty) return;
+
+    final symbol = _selectedLog!.symbol;
+    final firstIssue = _selectedLog!.issues!.first;
+
+    // 만약 이미 수정된 상태라면 승인 처리 (DB 반영)
+    if (firstIssue.isAiModified) {
+      approveIssueUpdate(firstIssue);
+      return;
+    }
+
+    // 수정되지 않은 상태라면 새로운 히스토리를 추가하여 '수정됨' 상태 유발 (DB 저장 포함)
+    final nowStr = DateTime.now().toString().split(' ')[0];
+    addIssueHistory(
+      symbol, 
+      firstIssue.title, 
+      IssueHistory(
+        date: nowStr, 
+        content: 'AI 분석 포인트 탐지', 
+        detail: '실시간 시장 데이터를 바탕으로 새로운 이슈 흐름이 포착되었습니다.',
+      )
+    );
+  }
+
+  // DEBUG: AI 추가 모드 토글 (실제 통신 로직을 타도록 수정)
+  void toggleAiAdditionDebug() {
+    if (_selectedLog == null) return;
+
+    final symbol = _selectedLog!.symbol;
+    const debugTitle = '[DEBUG] AI 발견 신규 이슈';
+    
+    final issues = _selectedLog!.issues ?? [];
+    final existing = issues.any((i) => i.title == debugTitle);
+
+    if (existing) {
+      // 이미 있으면 거절(삭제) 처리 (DB 반영)
+      final issueToDelete = issues.firstWhere((i) => i.title == debugTitle);
+      rejectIssueUpdate(issueToDelete);
+    } else {
+      // 없으면 신규 이슈로 프로토콜 가상 호출 (DB 저장 포함)
+      final nowStr = DateTime.now().toString().split(' ')[0];
+      final newIssue = InvestmentIssue(
+        title: debugTitle,
+        startDate: nowStr,
+        isPositive: true,
+        impact: 4,
+        history: [
+          IssueHistory(date: nowStr, content: '신규 모멘텀 포착', detail: 'AI 알고리즘이 새로운 상승 트리거를 발견했습니다.'),
+        ],
+      );
+      
+      addAnalysisLog(AnalysisLog(
+        symbol: symbol,
+        date: nowStr,
+        content: '',
+        issues: [newIssue],
+      ));
+    }
   }
 
   // DEBUG 전용 샘플 생성

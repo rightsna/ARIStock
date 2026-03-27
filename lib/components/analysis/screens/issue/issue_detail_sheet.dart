@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:ari_plugin/ari_plugin.dart';
-import '../models/analysis_model.dart';
-import '../providers/analysis_provider.dart';
-import '../../../shared/theme.dart';
+import '../../models/analysis_model.dart';
+import '../../providers/analysis_provider.dart';
+import '../../../../shared/theme.dart';
 
 class IssueDetailSheet extends StatefulWidget {
   final String symbol;
@@ -88,10 +88,68 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
           ),
         ),
         IconButton(
+          onPressed: () => _showDeleteConfirm(context),
+          icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.textSub),
+        ),
+        IconButton(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.close_rounded),
         ),
       ],
+    );
+  }
+
+  void _showDeleteConfirm(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceWhite,
+        title: const Text('이슈 삭제', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('이 이슈와 관련된 모든 히스토리 기록이 영구적으로 삭제됩니다. 계속하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소', style: TextStyle(color: AppTheme.textSub)),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.provider.deleteIssue(widget.issue);
+              Navigator.pop(ctx); // 다이얼로그 닫기
+              Navigator.pop(context); // 시트 닫기
+            },
+            child: const Text('삭제', style: TextStyle(color: AppTheme.accentRed)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showHistoryDeleteConfirm(BuildContext context, IssueHistory history) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceWhite,
+        title: const Text('기록 삭제', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('선택한 타임라인 기록을 영구적으로 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소', style: TextStyle(color: AppTheme.textSub)),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.provider.deleteHistoryItem(widget.issue, history);
+              Navigator.pop(ctx);
+              setState(() {
+                widget.issue.history?.removeWhere((h) => 
+                  h.date == history.date && h.content == history.content && h.detail == history.detail
+                );
+              });
+            },
+            child: const Text('삭제', style: TextStyle(color: AppTheme.accentRed)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -164,7 +222,7 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
         const Text('타임라인 히스토리', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textSub)),
         const SizedBox(height: 16),
         ...widget.issue.history!.reversed.map((h) => Padding(
-          padding: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.only(bottom: 20, right: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -179,7 +237,16 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(h.date, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textSub)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(h.date, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textSub)),
+                        GestureDetector(
+                          onTap: () => _showHistoryDeleteConfirm(context, h),
+                          child: const Icon(Icons.close_rounded, size: 14, color: AppTheme.textMain24),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 4),
                     Text(h.content, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textMain)),
                     if (h.detail != null) ...[

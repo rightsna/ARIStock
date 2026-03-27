@@ -148,6 +148,12 @@ class InvestmentIssue {
   @HiveField(8)
   final bool isChecked;
 
+  @HiveField(10)
+  final bool isAiAdded;
+
+  @HiveField(11)
+  final bool isAiModified;
+
   InvestmentIssue({
     required this.title,
     required this.startDate,
@@ -158,6 +164,8 @@ class InvestmentIssue {
     this.lastInvestigation,
     this.history,
     this.isChecked = false,
+    this.isAiAdded = false,
+    this.isAiModified = false,
   });
 
   factory InvestmentIssue.fromMap(Map<String, dynamic> map) {
@@ -173,6 +181,8 @@ class InvestmentIssue {
           ? (map['history'] as List).map((h) => IssueHistory.fromMap(Map<String, dynamic>.from(h))).toList()
           : null,
       isChecked: map['isChecked'] ?? false,
+      isAiAdded: map['isAiAdded'] ?? false,
+      isAiModified: map['isAiModified'] ?? false,
     );
   }
 
@@ -187,6 +197,8 @@ class InvestmentIssue {
       'lastInvestigation': lastInvestigation,
       'history': history?.map((h) => h.toMap()).toList(),
       'isChecked': isChecked,
+      'isAiAdded': isAiAdded,
+      'isAiModified': isAiModified,
     };
   }
 
@@ -199,6 +211,8 @@ class InvestmentIssue {
     List<IssueHistory>? history,
     bool? isChecked,
     int? impact,
+    bool? isAiAdded,
+    bool? isAiModified,
   }) {
     return InvestmentIssue(
       title: title,
@@ -210,6 +224,8 @@ class InvestmentIssue {
       lastInvestigation: lastInvestigation ?? this.lastInvestigation,
       history: history ?? this.history,
       isChecked: isChecked ?? this.isChecked,
+      isAiAdded: isAiAdded ?? this.isAiAdded,
+      isAiModified: isAiModified ?? this.isAiModified,
     );
   }
 }
@@ -225,10 +241,14 @@ class IssueHistory {
   @HiveField(2)
   final String? detail;
 
+  @HiveField(3)
+  final bool isAiAdded;
+
   IssueHistory({
     required this.date,
     required this.content,
     this.detail,
+    this.isAiAdded = false,
   });
 
   factory IssueHistory.fromMap(Map<String, dynamic> map) {
@@ -236,6 +256,7 @@ class IssueHistory {
       date: map['date'] ?? DateTime.now().toString().split(' ')[0],
       content: map['content'] ?? '',
       detail: map['detail'],
+      isAiAdded: map['isAiAdded'] ?? false,
     );
   }
 
@@ -244,6 +265,21 @@ class IssueHistory {
       'date': date,
       'content': content,
       'detail': detail,
+      'isAiAdded': isAiAdded,
     };
+  }
+
+  IssueHistory copyWith({
+    String? date,
+    String? content,
+    String? detail,
+    bool? isAiAdded,
+  }) {
+    return IssueHistory(
+      date: date ?? this.date,
+      content: content ?? this.content,
+      detail: detail ?? this.detail,
+      isAiAdded: isAiAdded ?? this.isAiAdded,
+    );
   }
 }
