@@ -41,10 +41,13 @@ class AnalysisProvider with ChangeNotifier {
     final existingLog = await _repository.getLogByStock(newLog.symbol);
     final List<InvestmentIssue> mergedIssues = List.from(existingLog?.issues ?? []);
 
+    // 제목 정규화 (공백 제거 후 대소문자 무시 비교)
+    String normalize(String text) => text.replaceAll(' ', '').toLowerCase();
+
     if (newLog.issues != null) {
       for (var newIssue in newLog.issues!) {
         final existingIndex = mergedIssues.indexWhere(
-          (i) => i.title == newIssue.title && i.isPositive == newIssue.isPositive
+          (i) => normalize(i.title) == normalize(newIssue.title)
         );
 
         if (existingIndex != -1) {
@@ -72,7 +75,7 @@ class AnalysisProvider with ChangeNotifier {
     final finalLog = AnalysisLog(
       symbol: newLog.symbol,
       date: DateTime.now().toString().split(' ')[0],
-      content: newLog.content,
+      content: newLog.content.isNotEmpty ? newLog.content : (existingLog?.content ?? ''),
       shortTermScore: newLog.shortTermScore ?? existingLog?.shortTermScore,
       mediumTermScore: newLog.mediumTermScore ?? existingLog?.mediumTermScore,
       longTermScore: newLog.longTermScore ?? existingLog?.longTermScore,
@@ -83,13 +86,13 @@ class AnalysisProvider with ChangeNotifier {
     );
     
     await _repository.saveLog(finalLog);
+    await _ensureStockExists(newLog.symbol);
     
     // 만약 현재 보고 있는 종목이라면 UI 갱신
     if (_selectedLog?.symbol == newLog.symbol) {
       _selectedLog = finalLog;
     }
     
-    _stocks = await _repository.getAllStocks();
     notifyListeners();
   }
 
@@ -100,11 +103,28 @@ class AnalysisProvider with ChangeNotifier {
     IssueHistory? history, 
     {String? newStatus}
   ) async {
-    final log = await _repository.getLogByStock(symbol);
-    if (log == null || log.issues == null) return;
+    AnalysisLog? log = await _repository.getLogByStock(symbol);
+    
+    // 만약 로그가 없다면 기본 로그 생성
+    if (log == null) {
+      log = AnalysisLog(
+        symbol: symbol,
+        date: DateTime.now().toString().split(' ')[0],
+        content: 'AI 초기 분석 진행 중...',
+        issues: [],
+      );
+    }
 
-    final updatedIssues = log.issues!.map((i) {
-      if (i.title == issueTitle) {
+    final List<InvestmentIssue> currentIssues = List.from(log.issues ?? []);
+    bool found = false;
+
+    // 제목 정규화 (공백 제거 후 대소문자 무시 비교)
+    String normalize(String text) => text.replaceAll(' ', '').toLowerCase();
+    final normalizedSearchTitle = normalize(issueTitle);
+
+    final updatedIssues = currentIssues.map((i) {
+      if (normalize(i.title) == normalizedSearchTitle) {
+        found = true;
         final currentHistory = List<IssueHistory>.from(i.history ?? []);
         if (history != null) currentHistory.add(history);
         
@@ -116,13 +136,37 @@ class AnalysisProvider with ChangeNotifier {
       return i;
     }).toList();
 
+    // 만약 해당 이슈가 없다면 새로 추가
+    if (!found) {
+      final newIssue = InvestmentIssue(
+        title: issueTitle,
+        startDate: DateTime.now().toString().split(' ')[0],
+        isPositive: true, // 기본값
+        status: newStatus ?? 'active',
+        history: history != null ? [history] : [],
+      );
+      updatedIssues.add(newIssue);
+    }
+
     final updatedLog = log.copyWith(issues: updatedIssues);
     await _repository.saveLog(updatedLog);
+
+    await _ensureStockExists(symbol);
 
     if (_selectedLog?.symbol == symbol) {
       _selectedLog = updatedLog;
     }
     notifyListeners();
+  }
+
+  /// 해당 종목이 분석 리스트에 등록되어 있는지 확인하고 등록 (UI 갱신용)
+  Future<void> _ensureStockExists(String symbol) async {
+    final allStocks = await _repository.getAllStocks();
+    if (!allStocks.any((s) => s.symbol == symbol)) {
+      await _repository.addStock(AnalysisStock(symbol: symbol, name: symbol));
+      _stocks = await _repository.getAllStocks();
+      notifyListeners();
+    }
   }
 
   // --- 기존 편의 기능 ---

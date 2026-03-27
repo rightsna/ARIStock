@@ -6,7 +6,7 @@ import 'package:aristock/components/analysis/providers/analysis_provider.dart';
 import 'package:aristock/components/account/providers/account_provider.dart';
 import 'package:aristock/components/watchlist/providers/watchlist_provider.dart';
 import 'package:aristock/components/portfolio/providers/portfolio_provider.dart';
-import 'package:aristock/components/portfolio/models/stock.dart';
+// import 'package:aristock/components/portfolio/models/stock.dart';
 import 'package:aristock/components/account/services/kiwoom_market_data_service.dart';
 import 'package:aristock/shared/models/market/market_timeframe.dart';
 import 'package:aristock/shared/services/log_provider.dart';
@@ -47,118 +47,156 @@ class ARIProtocolHandler {
 
   void start() {
     debugPrint('ARIProtocolHandler: Starting protocol engine...');
-    
+
     _protocolHandler = AppProtocolHandler(
       appId: 'aristock',
-      onCommand: (command, params) => _handleEvent(command, params),
-      onGetState: () => {
-        'isApiConnected': true,
-        'totalAssets': portfolioProvider.totalAssets,
-        'stockCount': portfolioProvider.stocks.length,
-      },
-      onGetCommands: () => {
-        'SAVE_ANALYSIS': 'Living Timeline 기록 및 병합',
-        'UPDATE_ISSUE': '특정 이슈의 히스토리/상태 업데이트',
-        'GET_ACCOUNT_INFO': '자산 및 포트폴리오 통합 조회',
-        'GET_MARKET_DATA': '실시간/차트 데이터 추출',
-      },
+      onCommand: _handleEvent,
+      onGetState: _getState,
+      onGetCommands: _getCommands,
     );
 
     _protocolHandler.start();
-
-    // 초기 연결 시 프로토콜 요약 보고 (에이전트 인지용)
-    WsManager.connectionStream.listen((isConnected) {
-      if (isConnected) {
-        LogProvider.info('ARI_PROTOCOL', 'WebSocket Connected. Syncing usage...');
-        _syncUsage();
-      }
-    });
   }
 
   void stop() {
     _protocolHandler.stop();
   }
 
-  void _syncUsage() {
-    // 표준 /APP.REPORT를 사용하여 에이전트에게 기능을 브리핑합니다.
-    WsManager.sendAsync('/APP.REPORT', {
-      'appId': 'aristock',
-      'type': 'info',
-      'message': 'ARIStock Investment Suite v2.1 준비됨. [SAVE_ANALYSIS], [GET_ACCOUNT_INFO] 등의 명령이 가능합니다.',
-    });
+  Map<String, dynamic> _getState() {
+    final bool useApi = accountProvider.hasApiKeys;
+    return {
+      'isApiConnected': useApi,
+      'totalAssets': useApi
+          ? accountProvider.totalAssets
+          : portfolioProvider.totalAssets,
+      'stockCount': useApi
+          ? accountProvider.kiwoomStocks.length
+          : portfolioProvider.stocks.length,
+      'selectedAccountNo': accountProvider.selectedAccountNo,
+    };
   }
 
-  Future<Map<String, dynamic>> _handleEvent(String event, Map<String, dynamic> data) async {
+  Map<String, String> _getCommands() {
+    return {
+      // --- 투자 분석 및 기록 (Living Timeline) ---
+      'SAVE_ANALYSIS_SUMMARY': '종목의 핵심 투자 가설, 분석 본문 및 투자 점수 기록 [params: symbol, content(Markdown), shortTermScore(0-100), summary(한줄요약)]',
+      'SAVE_ANALYSIS_ISSUES': '종목의 주요 투자 이슈(재료) 리스트 일괄 등록 및 병합 [params: symbol, issues: List<{title, isPositive, impact(1-5), status}>]',
+      'UPDATE_ISSUE_PROGRESS': '기존에 등록된 특정 이슈의 진행 상황(히스토리) 및 상태 추가 업데이트 [params: symbol, issueTitle, history: {date, content, detail}, status?]',
+      'GET_ANALYSIS_FULL': '특정 종목의 전체 분석 히스토리, 점수, 모든 이슈 내역 조회 [params: symbol]',
+      'GET_ANALYSIS_RECENT': '특정 종목의 최신 요약 정보 및 점수만 간략히 조회 [params: symbol]',
+
+      // --- 계정 및 시장 데이터 ---
+      'GET_ACCOUNT_INFO': '연동된 계좌의 자산 총액 및 실보유 종목(평균가, 수량, 수익률 포함) 리스트 조회 [no params]',
+      'GET_MARKET_DATA': '차트 데이터 및 실시간 호가 조회 [params: symbol, timeframe: "tick"|"1m"|"5m"|"15m"|"1d", limit: 데이터개수]',
+
+      // --- 관심 종목 및 탐색 ---
+      'GET_WATCHLIST': '현재 사용자의 관심 종목(Watchlist) 리스트 및 현재 선택된 종목 확인 [no params]',
+      'ADD_WATCH_STOCK': '관심 종목 리스트에 새로운 종목 추가 [params: symbol, name?]',
+      'REMOVE_WATCH_STOCK': '관심 종목 리스트에서 특정 종목 제거 [params: symbol]',
+      'SELECT_STOCK': '앱 UI의 화면을 특정 종목 상세 화면으로 강제 이동 [params: symbol]',
+    };
+  }
+
+  Future<Map<String, dynamic>> _handleEvent(
+    String event,
+    Map<String, dynamic> data,
+  ) async {
     LogProvider.debug('ARI_EVENT', 'Handling event: $event');
     switch (event) {
-      // --- 투자 이슈 및 타임라인 분석 ---
-      case 'SAVE_ANALYSIS':
-        final log = AnalysisLog.fromMap(Map<String, dynamic>.from(data));
+      // --- 1. 투자 분석 및 기록 관리 (Living Timeline) ---
+      
+      // 종합 분석 본문 및 점수 저장
+      case 'SAVE_ANALYSIS_SUMMARY':
+        final log = AnalysisLog.fromMap(Map<String, dynamic>.from({
+          ...data,
+          'date': DateTime.now().toString().split(' ')[0],
+        }));
         await analysisProvider.addAnalysisLog(log);
-        LogProvider.info('ANALYSIS', 'Living Timeline updated: ${log.symbol}');
+        LogProvider.info('ANALYSIS', 'Summary updated for ${log.symbol}');
         return {'status': 'success'};
 
-      case 'UPDATE_ISSUE':
-        // (이하 로직 동일하게 유지)
+      // 주요 이슈(재료) 일괄 등록 및 병합
+      case 'SAVE_ANALYSIS_ISSUES':
+        final log = AnalysisLog.fromMap(Map<String, dynamic>.from({
+          'symbol': data['symbol'],
+          'issues': data['issues'],
+        }));
+        await analysisProvider.addAnalysisLog(log);
+        LogProvider.info('ANALYSIS', 'Issues updated for ${log.symbol}');
+        return {'status': 'success'};
+
+      // 특정 이슈의 진행 상황 기록 히스토리 업데이트
+      case 'UPDATE_ISSUE_PROGRESS':
         final symbol = data['symbol'] as String;
         final issueTitle = data['issueTitle'] as String;
         final status = data['status'] as String?;
         final historyData = data['history'] as Map<String, dynamic>?;
-        
+
         IssueHistory? history;
         if (historyData != null) {
-          history = IssueHistory.fromMap(Map<String, dynamic>.from(historyData));
+          history = IssueHistory.fromMap(
+            Map<String, dynamic>.from(historyData),
+          );
         }
-        
-        await analysisProvider.addIssueHistory(symbol, issueTitle, history, newStatus: status);
+
+        await analysisProvider.addIssueHistory(
+          symbol,
+          issueTitle,
+          history,
+          newStatus: status,
+        );
+        LogProvider.info('ANALYSIS', 'Issue progress updated: $issueTitle ($symbol)');
         return {'status': 'success'};
 
-      case 'GET_ANALYSIS':
+      // 특정 종목의 모든 분석 내역 조회
+      case 'GET_ANALYSIS_FULL':
         final symbol = data['symbol'] as String;
         final log = analysisProvider.getLogForSymbol(symbol);
         return {'status': 'success', 'data': log?.toMap()};
 
-      // --- 계정(Portfolio) 및 자산 관리 ---
-      case 'ADD_ACCOUNT_STOCK':
-        final stock = Stock(
-          id: data['symbol'] as String,
-          symbol: data['symbol'] as String,
-          name: data['name'] as String,
-          quantity: (data['quantity'] ?? 0).toDouble(),
-          purchasePrice: (data['purchasePrice'] ?? 0).toDouble(),
-          currentPrice: (data['currentPrice'] ?? 0).toDouble(),
-        );
-        await portfolioProvider.addStock(stock);
-        LogProvider.info('ACCOUNT', 'Stock added to manual portfolio: ${stock.symbol}');
-        return {'status': 'success'};
-
-      case 'REMOVE_ACCOUNT_STOCK':
+      // 특정 종목의 요약 정보 및 점수만 조회
+      case 'GET_ANALYSIS_RECENT':
         final symbol = data['symbol'] as String;
-        await portfolioProvider.removeStock(symbol);
-        LogProvider.info('ACCOUNT', 'Stock removed from manual portfolio: $symbol');
-        return {'status': 'success'};
+        final log = analysisProvider.getLogForSymbol(symbol);
+        if (log == null) return {'status': 'success', 'data': null};
+        
+        return {
+          'status': 'success',
+          'data': {
+            'symbol': log.symbol,
+            'date': log.date,
+            'summary': log.summary,
+            'shortTermScore': log.shortTermScore,
+            'content': log.content,
+          }
+        };
 
+      // --- 2. 계정(Portfolio) 및 자산 관리 ---
       case 'GET_ACCOUNT_INFO':
         return {
           'status': 'success',
           'data': {
-            'kiwoomHoldings': accountProvider.kiwoomStocks.map((e) => e.toMap()).toList(),
-            'manualPortfolio': portfolioProvider.stocks.map((e) => e.toMap()).toList(),
+            'holdings': accountProvider.hasApiKeys
+                ? accountProvider.kiwoomStocks.map((e) => e.toMap()).toList()
+                : portfolioProvider.stocks.map((e) => e.toMap()).toList(),
             'summary': {
-              'totalAssets': accountProvider.totalAssets + portfolioProvider.totalAssets,
+              'totalAssets': accountProvider.hasApiKeys
+                  ? accountProvider.totalAssets
+                  : portfolioProvider.totalAssets,
               'deposit': accountProvider.deposit,
               'selectedAccountNo': accountProvider.selectedAccountNo,
-            }
-          }
+              'isRealAccount': accountProvider.hasApiKeys,
+            },
+          },
         };
 
-      // --- 관심 종목(Watchlist) 관리 ---
+      // --- 3. 관심 종목(Watchlist) 관리 ---
       case 'GET_WATCHLIST':
         return {
           'status': 'success',
           'data': {
             'items': watchlistProvider.items.map((e) => e.toMap()).toList(),
-          }
+          },
         };
 
       case 'ADD_WATCH_STOCK':
@@ -178,7 +216,7 @@ class ARIProtocolHandler {
         analysisProvider.selectStock(symbol);
         return {'status': 'success'};
 
-      // --- 시장 데이터 조회 ---
+      // --- 4. 시장 데이터 조회 ---
       case 'GET_MARKET_DATA':
         final symbol = data['symbol'] as String;
         final timeframeStr = data['timeframe'] as String? ?? 'day';
@@ -187,7 +225,11 @@ class ARIProtocolHandler {
           (t) => t.protocolValue == timeframeStr,
           orElse: () => MarketTimeframe.day,
         );
-        final marketData = await marketDataService.fetchMarketData(symbol: symbol, timeframe: timeframe, limit: limit);
+        final marketData = await marketDataService.fetchMarketData(
+          symbol: symbol,
+          timeframe: timeframe,
+          limit: limit,
+        );
         return {'status': 'success', 'data': marketData};
 
       default:

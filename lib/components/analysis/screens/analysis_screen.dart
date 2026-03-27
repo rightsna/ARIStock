@@ -55,55 +55,37 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: analysisProvider.isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionHeader(selectedStock.name),
-                  const SizedBox(height: 16),
-                  _buildTopActionRow(context, selectedStock.symbol),
-                  const SizedBox(height: 24),
-                  if (analysisProvider.selectedLog != null) 
-                    _buildMainAnalysisContent(context, analysisProvider, selectedStock)
+                  if (analysisProvider.selectedLog != null)
+                    _buildMainAnalysisContent(
+                      context,
+                      analysisProvider,
+                      selectedStock,
+                    )
                   else
                     EmptyAnalysisView(
                       symbol: selectedStock.symbol,
-                      onRequestAnalysis: () => _requestAIUpdate(context, selectedStock.symbol),
+                      onRequestAnalysis: () =>
+                          _requestAIUpdate(context, selectedStock.symbol),
                     ),
                   const SizedBox(height: 48),
-                  if (kDebugMode) _buildDebugTools(analysisProvider, selectedStock),
-                  _buildFooterActions(context, analysisProvider),
+                  if (kDebugMode)
+                    _buildDebugTools(analysisProvider, selectedStock),
+                  _buildFooterActions(
+                    context,
+                    analysisProvider,
+                    selectedStock.symbol,
+                  ),
                 ],
               ),
             ),
-    );
-  }
-
-  Widget _buildSectionHeader(String stockName) {
-    return Row(
-      children: [
-        const Icon(Icons.query_stats_rounded, size: 20, color: AppTheme.primaryBlue),
-        const SizedBox(width: 8),
-        Text(
-          '$stockName 투자 이슈 매니저',
-          style: const TextStyle(color: AppTheme.textMain, fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTopActionRow(BuildContext context, String symbol) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          '통합 분석 리포트 (Living Timeline)',
-          style: TextStyle(fontSize: 12, color: AppTheme.textSub, fontWeight: FontWeight.w500),
-        ),
-        _buildRequestAnalysisButton(context, symbol),
-      ],
     );
   }
 
@@ -122,7 +104,11 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     );
   }
 
-  Widget _buildMainAnalysisContent(BuildContext context, AnalysisProvider provider, dynamic stock) {
+  Widget _buildMainAnalysisContent(
+    BuildContext context,
+    AnalysisProvider provider,
+    dynamic stock,
+  ) {
     final log = provider.selectedLog!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +123,8 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
         const SizedBox(height: 32),
         AnalysisIssueGantt(
           issues: log.issues ?? [],
-          onIssueTap: (issue) => _showDetails(context, stock.symbol, issue, provider),
+          onIssueTap: (issue) =>
+              _showDetails(context, stock.symbol, issue, provider),
           onAddRequest: () => _showAddRequest(context, stock.symbol),
         ),
         const SizedBox(height: 32),
@@ -156,12 +143,18 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     );
   }
 
-  void _showDetails(BuildContext context, String symbol, InvestmentIssue issue, AnalysisProvider provider) {
+  void _showDetails(
+    BuildContext context,
+    String symbol,
+    InvestmentIssue issue,
+    AnalysisProvider provider,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => IssueDetailSheet(symbol: symbol, issue: issue, provider: provider),
+      builder: (ctx) =>
+          IssueDetailSheet(symbol: symbol, issue: issue, provider: provider),
     );
   }
 
@@ -178,7 +171,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
         'appId': 'aristock',
         'event': 'REQUEST_ANALYSIS',
         'message': '$symbol 종목에 대한 최신 상황을 분석하여 통합 이슈 타임라인을 업데이트해줘.',
-        'params': {'symbol': symbol}
+        'params': {'symbol': symbol},
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('AI에게 "$symbol" 리서치 업데이트를 요청했습니다...')),
@@ -190,21 +183,45 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     return Center(
       child: TextButton.icon(
         onPressed: () => provider.loadSampleTimeline(stock.symbol, stock.name),
-        icon: const Icon(Icons.playlist_add_check_circle_rounded, size: 16, color: Colors.blue),
-        label: const Text('DEBUG: 복합 간트 차트 샘플 생성', style: TextStyle(color: Colors.blue, fontSize: 12)),
+        icon: const Icon(
+          Icons.playlist_add_check_circle_rounded,
+          size: 16,
+          color: Colors.blue,
+        ),
+        label: const Text(
+          'DEBUG: 복합 간트 차트 샘플 생성',
+          style: TextStyle(color: Colors.blue, fontSize: 12),
+        ),
       ),
     );
   }
 
-  Widget _buildFooterActions(BuildContext context, AnalysisProvider provider) {
+  Widget _buildFooterActions(
+    BuildContext context,
+    AnalysisProvider provider,
+    String symbol,
+  ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 40),
-      child: Center(
-        child: TextButton.icon(
-          onPressed: () => _showResetConfirm(context, provider),
-          icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.textMain38),
-          label: const Text('현재 종목 타임라인 전체 초기화', style: TextStyle(color: AppTheme.textMain38, fontSize: 12)),
-        ),
+      padding: const EdgeInsets.only(top: 24, bottom: 40),
+      child: Column(
+        children: [
+          Center(child: _buildRequestAnalysisButton(context, symbol)),
+          const SizedBox(height: 32),
+          Center(
+            child: TextButton.icon(
+              onPressed: () => _showResetConfirm(context, provider),
+              icon: const Icon(
+                Icons.delete_outline,
+                size: 16,
+                color: AppTheme.textMain38,
+              ),
+              label: const Text(
+                '현재 종목 타임라인 전체 초기화',
+                style: TextStyle(color: AppTheme.textMain38, fontSize: 12),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -214,13 +231,25 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.surfaceWhite,
-        title: const Text('데이터 초기화', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          '데이터 초기화',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: const Text('현재까지 누적된 모든 투자 이슈와 간트 차트 기록이 삭제됩니다.\n계속하시겠습니까?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('취소')),
           TextButton(
-            onPressed: () { provider.clearAll(); Navigator.pop(ctx); },
-            child: const Text('초기화', style: TextStyle(color: AppTheme.accentRed)),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              provider.clearAll();
+              Navigator.pop(ctx);
+            },
+            child: const Text(
+              '초기화',
+              style: TextStyle(color: AppTheme.accentRed),
+            ),
           ),
         ],
       ),

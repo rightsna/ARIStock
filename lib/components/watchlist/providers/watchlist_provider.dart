@@ -78,4 +78,11 @@ class WatchlistProvider with ChangeNotifier {
       }
     }
   }
+
+  Future<void> clearAll() async {
+    await _box.clear();
+    _loadItems();
+    _selectedSymbol = null;
+    notifyListeners();
+  }
 }
