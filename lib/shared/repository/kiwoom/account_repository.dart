@@ -1,7 +1,7 @@
-import 'kiwoom_api_client.dart';
+import 'package:aristock/shared/infra/kiwoom/api_client.dart';
 
 /// 계좌/잔고 관련 조회 전용 서비스
-class KiwoomAccountService {
+class KiwoomAccountRepository {
   static const String trAccountList = 'ka00001';
   static const String trEvaluationStatus = 'kt00004';
   static const String trDepositDetails = 'kt00001';
@@ -9,13 +9,10 @@ class KiwoomAccountService {
 
   final KiwoomApiClient _client;
 
-  KiwoomAccountService(this._client);
+  KiwoomAccountRepository(this._client);
 
   Future<KiwoomResponse> getAccounts() {
-    return _client.callApi(
-      endpoint: '/api/dostk/acnt',
-      apiId: trAccountList,
-    );
+    return _client.callApi(endpoint: '/api/dostk/acnt', apiId: trAccountList);
   }
 
   Future<KiwoomResponse> getAccountEvaluation({required String accountNo}) {

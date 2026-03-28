@@ -2,14 +2,14 @@ import 'package:aristock/shared/models/market/candle.dart';
 import 'package:aristock/shared/models/market/market_tick.dart';
 import 'package:aristock/shared/models/market/market_timeframe.dart';
 import 'package:flutter/foundation.dart';
-import 'kiwoom_market_service.dart';
+import 'market_repository.dart';
 
 /// 키움 원본 응답을 에이전트가 쓰기 좋은 표준 시장 데이터로 변환한다.
-class KiwoomMarketDataService {
-  final KiwoomMarketService _marketService;
+class KiwoomMarketDataRepository {
+  final KiwoomMarketRepository _marketService;
   final List<DateTime> _callHistory = [];
 
-  KiwoomMarketDataService(this._marketService);
+  KiwoomMarketDataRepository(this._marketService);
 
   int getRequestsInLastMinute() {
     final now = DateTime.now();
@@ -72,17 +72,23 @@ class KiwoomMarketDataService {
       throw StateError('API 요청 실패: ${response.statusCode} - ${response.body}');
     }
 
-    final raw = _extractChartRows(response.body, apiId: timeframe.isDay ? 'ka10081' : 'ka10080');
+    final raw = _extractChartRows(
+      response.body,
+      apiId: timeframe.isDay ? 'ka10081' : 'ka10080',
+    );
     if (raw.isEmpty) {
       // 1. 서버 측 명시적 에러 메시지 확인 (KIS/키움/커스텀 브릿지 공통)
-      final errorMsg = response.body['msg1'] ?? 
-                      response.body['message'] ?? 
-                      response.body['msg'] ?? 
-                      response.body['err_msg'] ?? 
-                      response.body['return_msg'];
-      
+      final errorMsg =
+          response.body['msg1'] ??
+          response.body['message'] ??
+          response.body['msg'] ??
+          response.body['err_msg'] ??
+          response.body['return_msg'];
+
       if (errorMsg != null) {
-        throw StateError('브릿지 서버 에러: $errorMsg (TR: ${timeframe.protocolValue})');
+        throw StateError(
+          '브릿지 서버 에러: $errorMsg (TR: ${timeframe.protocolValue})',
+        );
       }
 
       // 2. 키는 존재하는데 리스트가 비어있는 경우인지 확인
@@ -92,13 +98,19 @@ class KiwoomMarketDataService {
       });
 
       final bodyStr = response.body.toString();
-      final preview = bodyStr.length > 200 ? bodyStr.substring(0, 200) : bodyStr;
+      final preview = bodyStr.length > 200
+          ? bodyStr.substring(0, 200)
+          : bodyStr;
 
       if (emptyListKeys.isNotEmpty) {
-        throw StateError('조회 결과 데이터가 비어 있습니다. (Empty Keys: $emptyListKeys, TR: ${timeframe.protocolValue})');
+        throw StateError(
+          '조회 결과 데이터가 비어 있습니다. (Empty Keys: $emptyListKeys, TR: ${timeframe.protocolValue})',
+        );
       }
 
-      throw StateError('응답에서 데이터 리스트 필드를 찾을 수 없습니다. (Keys: ${response.body.keys.toList()}, Preview: $preview)');
+      throw StateError(
+        '응답에서 데이터 리스트 필드를 찾을 수 없습니다. (Keys: ${response.body.keys.toList()}, Preview: $preview)',
+      );
     }
 
     final candles = Candle.fromKiwoomList(
@@ -109,8 +121,12 @@ class KiwoomMarketDataService {
 
     if (candles.isEmpty) {
       if (raw.isNotEmpty) {
-        debugPrint('🔵 DEBUG: Parsing failed. First raw item keys: ${raw.first.keys.toList()}');
-        debugPrint('🔵 DEBUG: First raw item values: ${raw.first.values.toList()}');
+        debugPrint(
+          '🔵 DEBUG: Parsing failed. First raw item keys: ${raw.first.keys.toList()}',
+        );
+        debugPrint(
+          '🔵 DEBUG: First raw item values: ${raw.first.values.toList()}',
+        );
       }
       throw StateError('데이터 파싱 결과가 비어 있습니다. (원본 개수: ${raw.length})');
     }
@@ -144,11 +160,7 @@ class KiwoomMarketDataService {
       );
       final volume = _readInt(row['cntg_vol'] ?? row['acml_vol']);
 
-      ticks.add(MarketTick(
-        timestamp: timestamp,
-        price: price,
-        volume: volume,
-      ));
+      ticks.add(MarketTick(timestamp: timestamp, price: price, volume: volume));
     }
 
     ticks.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -159,7 +171,7 @@ class KiwoomMarketDataService {
   List<dynamic> _extractChartRows(Map<String, dynamic> body, {String? apiId}) {
     // 1. 하드코딩된 주요 후보 키 먼저 확인
     final candidateKeys = [
-      'output2', 'output', 'output1', 
+      'output2', 'output', 'output1',
       'stk_dt_pole_chart_qry', 'stk_min_pole_chart_qry',
       'data', 'result', 'outputs', 'grid', 'records',
       if (apiId != null) apiId, // TR명 자체가 키인 경우 대응

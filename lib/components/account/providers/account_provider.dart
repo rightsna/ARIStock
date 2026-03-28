@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:aristock/shared/models/kiwoom/kiwoom_models.dart';
-import 'package:aristock/shared/repository/kiwoom/kiwoom_services.dart';
+import 'package:aristock/shared/models/kiwoom/credentials_model.dart';
+import 'package:aristock/shared/models/stock/stock.dart';
+import 'package:aristock/shared/infra/kiwoom/api_client.dart';
+import 'package:aristock/shared/repository/kiwoom/account_repository.dart';
+import 'package:aristock/shared/repository/kiwoom/market_repository.dart';
+import 'package:aristock/shared/repository/kiwoom/trading_repository.dart';
 
 /// 계좌 및 포트폴리오 데이터를 관리하는 Provider입니다.
 class AccountProvider with ChangeNotifier {
-  final KiwoomServiceBundle _kiwoom;
+  final KiwoomApiClient apiClient;
+  final KiwoomAccountRepository accountService;
+  final KiwoomMarketRepository marketService;
+  final KiwoomTradingRepository tradingService;
 
-  AccountProvider({KiwoomServiceBundle? kiwoom})
-    : _kiwoom = kiwoom ?? KiwoomServiceBundle();
+  AccountProvider({
+    required this.apiClient,
+    required this.accountService,
+    required this.marketService,
+    required this.tradingService,
+  });
 
   bool _isLoading = false;
   KiwoomCredentials? _credentials;
@@ -29,11 +40,6 @@ class AccountProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isRefreshing => _isRefreshing;
   KiwoomCredentials? get credentials => _credentials;
-  KiwoomServiceBundle get kiwoom => _kiwoom;
-  KiwoomApiClient get apiClient => _kiwoom.client;
-  KiwoomAccountService get accountService => _kiwoom.account;
-  KiwoomMarketService get marketService => _kiwoom.market;
-  KiwoomTradingService get tradingService => _kiwoom.trading;
   List<Map<String, dynamic>> get accounts => _accounts;
   String? get selectedAccountNo => _selectedAccountNo;
   String? get lastError => _lastError;

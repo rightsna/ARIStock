@@ -1,7 +1,7 @@
-import 'kiwoom_api_client.dart';
+import 'package:aristock/shared/infra/kiwoom/api_client.dart';
 
 /// 종목/시세 조회 전용 서비스
-class KiwoomMarketService {
+class KiwoomMarketRepository {
   static const String trStockQuote = 'ka10004';
   static const String trStockInfo = 'ka10001';
   static const String trTickChart = 'ka10079';
@@ -10,7 +10,7 @@ class KiwoomMarketService {
 
   final KiwoomApiClient _client;
 
-  KiwoomMarketService(this._client);
+  KiwoomMarketRepository(this._client);
 
   Future<KiwoomResponse> getStockQuote({required String stockCode}) {
     return _client.callApi(

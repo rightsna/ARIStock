@@ -1,12 +1,12 @@
-import 'kiwoom_api_client.dart';
+import 'package:aristock/shared/infra/kiwoom/api_client.dart';
 
 /// 주문/매매 전용 서비스
-class KiwoomTradingService {
+class KiwoomTradingRepository {
   static const String trBuyOrder = 'kt10000';
 
   final KiwoomApiClient _client;
 
-  KiwoomTradingService(this._client);
+  KiwoomTradingRepository(this._client);
 
   Future<KiwoomResponse> buyStock({
     required String stockCode,

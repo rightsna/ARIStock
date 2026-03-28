@@ -1,16 +1,20 @@
+import 'package:aristock/shared/repository/kiwoom/trading_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'shared/theme.dart';
 import 'components/layout/main_layout.dart';
 
-import 'package:aristock/shared/models/kiwoom/kiwoom_models.dart';
+import 'shared/models/stock/stock.dart';
+import 'shared/repository/kiwoom/market_data_repository.dart';
 import 'components/analysis/providers/analysis_provider.dart';
 import 'components/analysis/models/stock_analysis_model.dart';
 import 'components/analysis/models/investment_issue_model.dart';
 import 'components/account/providers/account_provider.dart';
 
-import 'package:aristock/shared/repository/kiwoom/kiwoom_services.dart';
+import 'package:aristock/shared/infra/kiwoom/api_client.dart';
+import 'package:aristock/shared/repository/kiwoom/account_repository.dart';
+import 'package:aristock/shared/repository/kiwoom/market_repository.dart';
 import 'components/watchlist/providers/watchlist_provider.dart';
 import 'components/watchlist/models/watchlist_model.dart';
 import 'package:ari_plugin/ari_plugin.dart';
@@ -28,24 +32,31 @@ void main(List<String> args) async {
   Hive.registerAdapter(InvestmentIssueAdapter());
   Hive.registerAdapter(IssueHistoryAdapter());
 
-
   Hive.registerAdapter(StockAdapter());
   Hive.registerAdapter(WatchlistStockAdapter());
 
   // Provider 인스턴스 생성 및 초기화 대기
 
-  
   final analysisProvider = AnalysisProvider();
   await analysisProvider.init();
-  
-  final kiwoom = KiwoomServiceBundle();
-  final accountProvider = AccountProvider(kiwoom: kiwoom);
+
+  final kiwoomClient = KiwoomApiClient();
+  final kiwoomAccount = KiwoomAccountRepository(kiwoomClient);
+  final kiwoomMarket = KiwoomMarketRepository(kiwoomClient);
+  final kiwoomTrading = KiwoomTradingRepository(kiwoomClient);
+
+  final accountProvider = AccountProvider(
+    apiClient: kiwoomClient,
+    accountService: kiwoomAccount,
+    marketService: kiwoomMarket,
+    tradingService: kiwoomTrading,
+  );
   await accountProvider.init();
-  
+
   final watchlistProvider = WatchlistProvider();
   await watchlistProvider.init(accountProvider);
-  
-  final marketDataService = KiwoomMarketDataService(kiwoom.market);
+
+  final marketDataService = KiwoomMarketDataRepository(kiwoomMarket);
 
   // ARI Plugin 연동 설정
   String? readArg(String prefix) {
@@ -69,7 +80,6 @@ void main(List<String> args) async {
     final isHeadless = args.contains('--headless');
 
     final handler = ARIProtocolHandler.create(
-
       analysisProvider: analysisProvider,
       accountProvider: accountProvider,
       watchlistProvider: watchlistProvider,
@@ -89,7 +99,6 @@ void main(List<String> args) async {
   runApp(
     MultiProvider(
       providers: [
-
         ChangeNotifierProvider.value(value: analysisProvider),
         ChangeNotifierProvider.value(value: accountProvider),
         ChangeNotifierProvider.value(value: watchlistProvider),

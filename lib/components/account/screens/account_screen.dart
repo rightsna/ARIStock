@@ -8,6 +8,7 @@ import 'kiwoom_setup/kiwoom_setup_screen.dart';
 import 'widgets/api_status_bar.dart';
 import 'widgets/asset_summary_card.dart';
 import 'widgets/stock_item_row.dart';
+import 'debug/kiwoom_debug_screen.dart';
 
 /// 계좌 화면: API 연동 상태에 따라 설정 화면 또는 포트폴리오 메인 화면을 표시합니다.
 class AccountScreen extends StatelessWidget {
@@ -104,6 +105,27 @@ class AccountScreen extends StatelessWidget {
           ),
         ),
         _buildStockList(context, displayStocks, format),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const KiwoomDebugScreen()),
+                );
+              },
+              icon: const Icon(Icons.bug_report_outlined, size: 18),
+              label: const Text('키움 API 디버그 도구'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.textMain38,
+                side: const BorderSide(color: AppTheme.textMain10),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+          ),
+        ),
         const SliverToBoxAdapter(child: SizedBox(height: 80)),
       ],
     );
