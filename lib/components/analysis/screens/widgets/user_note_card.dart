@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/theme.dart';
+import '../../../../../shared/theme.dart';
 
 class UserNoteCard extends StatelessWidget {
   final String? initialNote;
   final Function(String) onChanged;
 
-  const UserNoteCard({
-    super.key,
-    this.initialNote,
-    required this.onChanged,
-  });
+  const UserNoteCard({super.key, this.initialNote, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    // Note: TextEditingController setup is better done in a StatefulWidget 
+    // Note: TextEditingController setup is better done in a StatefulWidget
     // but for simple cases this works if the parent doesn't rebuild too often.
     final controller = TextEditingController(text: initialNote);
 
@@ -23,8 +19,12 @@ class UserNoteCard extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 3, height: 16,
-              decoration: BoxDecoration(color: AppTheme.textMain38, borderRadius: BorderRadius.circular(2)),
+              width: 3,
+              height: 16,
+              decoration: BoxDecoration(
+                color: AppTheme.textMain38,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
             const SizedBox(width: 8),
             const Text(
@@ -43,7 +43,10 @@ class UserNoteCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.textMain10, width: 1.5), // 일관된 노트 테두리
+            border: Border.all(
+              color: AppTheme.textMain10,
+              width: 1.5,
+            ), // 일관된 노트 테두리
           ),
           child: TextField(
             controller: controller,

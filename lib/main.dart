@@ -6,7 +6,8 @@ import 'components/layout/main_layout.dart';
 import 'components/portfolio/providers/portfolio_provider.dart';
 import 'components/portfolio/models/stock.dart';
 import 'components/analysis/providers/analysis_provider.dart';
-import 'components/analysis/models/analysis_model.dart';
+import 'components/analysis/models/stock_analysis_model.dart';
+import 'components/analysis/models/investment_issue_model.dart';
 import 'components/account/providers/account_provider.dart';
 import 'components/account/models/portfolio_report_model.dart';
 import 'components/account/services/kiwoom_services.dart';
@@ -23,8 +24,7 @@ void main(List<String> args) async {
   await Hive.initFlutter();
 
   // 어댑터 등록
-  Hive.registerAdapter(AnalysisStockAdapter());
-  Hive.registerAdapter(AnalysisLogAdapter());
+  Hive.registerAdapter(StockAnalysisAdapter());
   Hive.registerAdapter(InvestmentIssueAdapter());
   Hive.registerAdapter(IssueHistoryAdapter());
 

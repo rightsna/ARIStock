@@ -7,13 +7,13 @@ import '../../watchlist/providers/watchlist_provider.dart';
 import '../../../shared/theme.dart';
 
 // 리팩토링된 위젯들
-import '../widgets/trend_summary_card.dart';
-import '../widgets/analysis_report_header.dart';
+import 'widgets/trend_summary_card.dart';
+import 'widgets/analysis_report_header.dart';
 import 'gantt/analysis_issue_gantt.dart';
-import '../widgets/user_note_card.dart';
-import '../widgets/analysis_state_views.dart';
-import '../widgets/analysis_footer_actions.dart';
-import '../widgets/analysis_debug_tools.dart';
+import 'widgets/user_note_card.dart';
+import 'widgets/analysis_state_views.dart';
+import 'widgets/analysis_footer_actions.dart';
+import 'widgets/analysis_debug_tools.dart';
 
 /// 종목분석 화면: 단일 종목에 대한 통합 투자 이슈 매니지먼트를 담당합니다 (Living Report).
 class AnalysisScreen extends StatefulWidget {
@@ -60,7 +60,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (analysisProvider.selectedLog != null)
+                  if (analysisProvider.selectedAnalysis != null)
                     _buildMainAnalysisContent(
                       context,
                       analysisProvider,
@@ -70,7 +70,10 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                     EmptyAnalysisView(
                       symbol: selectedStock.symbol,
                       onRequestAnalysis: () =>
-                          AnalysisFooterActions.requestAIUpdate(context, selectedStock.symbol),
+                          AnalysisFooterActions.requestAIUpdate(
+                            context,
+                            selectedStock.symbol,
+                          ),
                     ),
                   const SizedBox(height: 48),
                   if (kDebugMode)
@@ -79,7 +82,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                       symbol: selectedStock.symbol,
                       name: selectedStock.name,
                     ),
-                  if (analysisProvider.selectedLog != null)
+                  if (analysisProvider.selectedAnalysis != null)
                     AnalysisFooterActions(
                       provider: analysisProvider,
                       symbol: selectedStock.symbol,
@@ -95,26 +98,23 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     AnalysisProvider provider,
     dynamic stock,
   ) {
-    final log = provider.selectedLog!;
+    final analysis = provider.selectedAnalysis!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AnalysisReportHeader(stockName: stock.name, date: log.date),
+        AnalysisReportHeader(stockName: stock.name, date: analysis.date),
         const SizedBox(height: 32),
         TrendSummaryCard(
-          shortTerm: log.shortTermScore,
-          mediumTerm: log.mediumTermScore,
-          longTerm: log.longTermScore,
-          summary: log.summary,
+          shortTerm: analysis.shortTermScore,
+          mediumTerm: analysis.mediumTermScore,
+          longTerm: analysis.longTermScore,
+          summary: analysis.summary,
         ),
         const SizedBox(height: 32),
-        AnalysisIssueGantt(
-          symbol: stock.symbol,
-          issues: log.issues ?? [],
-        ),
+        AnalysisIssueGantt(symbol: stock.symbol, issues: analysis.issues ?? []),
         const SizedBox(height: 32),
         UserNoteCard(
-          initialNote: log.userNote,
+          initialNote: analysis.userNote,
           onChanged: (value) => provider.updateUserNote(value),
         ),
       ],

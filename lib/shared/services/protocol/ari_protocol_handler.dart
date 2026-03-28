@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ari_plugin/ari_plugin.dart';
-import 'package:aristock/components/analysis/models/analysis_model.dart';
+import 'package:aristock/components/analysis/models/stock_analysis_model.dart';
+import 'package:aristock/components/analysis/models/investment_issue_model.dart';
 import 'package:aristock/components/analysis/providers/analysis_provider.dart';
 import 'package:aristock/components/account/providers/account_provider.dart';
 import 'package:aristock/components/watchlist/providers/watchlist_provider.dart';
@@ -10,6 +11,7 @@ import 'package:aristock/components/portfolio/providers/portfolio_provider.dart'
 import 'package:aristock/components/account/services/kiwoom_market_data_service.dart';
 import 'package:aristock/shared/models/market/market_timeframe.dart';
 import 'package:aristock/shared/services/log_provider.dart';
+import 'package:aristock/components/watchlist/models/watchlist_model.dart';
 
 /// AriFramework 표준을 준수하는 종목분석 프로토콜 핸들러입니다.
 class ARIProtocolHandler {
@@ -119,26 +121,34 @@ class ARIProtocolHandler {
           }
         };
 
-      // --- 1. 투자 분석 및 기록 관리 (Living Timeline) ---
-      
       // 종합 분석 본문 및 점수 저장
       case 'SAVE_ANALYSIS_SUMMARY':
-        final log = AnalysisLog.fromMap(Map<String, dynamic>.from({
+        final symbol = data['symbol'] as String;
+        final name = data['name'] as String? ?? watchlistProvider.items.firstWhere((e) => e.symbol == symbol, orElse: () => WatchlistStock(symbol: symbol, name: symbol)).name;
+        
+        final analysis = StockAnalysis.fromMap(Map<String, dynamic>.from({
           ...data,
+          'symbol': symbol,
+          'stockName': name,
           'date': DateTime.now().toString().split(' ')[0],
         }));
-        await analysisProvider.addAnalysisLog(log);
-        LogProvider.info('ANALYSIS', 'Summary updated for ${log.symbol}');
+        await analysisProvider.addAnalysisLog(analysis);
+        LogProvider.info('ANALYSIS', 'Summary updated for $symbol');
         return {'status': 'success'};
 
       // 주요 이슈(재료) 일괄 등록 및 병합
       case 'SAVE_ANALYSIS_ISSUES':
-        final log = AnalysisLog.fromMap(Map<String, dynamic>.from({
-          'symbol': data['symbol'],
+        final symbol = data['symbol'] as String;
+        final name = data['name'] as String? ?? watchlistProvider.items.firstWhere((e) => e.symbol == symbol, orElse: () => WatchlistStock(symbol: symbol, name: symbol)).name;
+
+        final analysis = StockAnalysis.fromMap(Map<String, dynamic>.from({
+          'symbol': symbol,
+          'stockName': name,
           'issues': data['issues'],
+          'date': DateTime.now().toString().split(' ')[0],
         }));
-        await analysisProvider.addAnalysisLog(log);
-        LogProvider.info('ANALYSIS', 'Issues updated for ${log.symbol}');
+        await analysisProvider.addAnalysisLog(analysis);
+        LogProvider.info('ANALYSIS', 'Issues updated for $symbol');
         return {'status': 'success'};
 
       // 특정 이슈의 진행 상황 기록 히스토리 업데이트
@@ -147,6 +157,7 @@ class ARIProtocolHandler {
         final issueTitle = data['issueTitle'] as String;
         final status = data['status'] as String?;
         final historyData = data['history'] as Map<String, dynamic>?;
+        final name = data['name'] as String? ?? watchlistProvider.items.firstWhere((e) => e.symbol == symbol, orElse: () => WatchlistStock(symbol: symbol, name: symbol)).name;
 
         IssueHistory? history;
         if (historyData != null) {
@@ -160,6 +171,7 @@ class ARIProtocolHandler {
           issueTitle,
           history,
           newStatus: status,
+          stockName: name,
         );
         LogProvider.info('ANALYSIS', 'Issue progress updated: $issueTitle ($symbol)');
         return {'status': 'success'};
@@ -167,23 +179,23 @@ class ARIProtocolHandler {
       // 특정 종목의 모든 분석 내역 조회
       case 'GET_ANALYSIS_FULL':
         final symbol = data['symbol'] as String;
-        final log = analysisProvider.getLogForSymbol(symbol);
-        return {'status': 'success', 'data': log?.toMap()};
+        final analysis = analysisProvider.getAnalysisForSymbol(symbol);
+        return {'status': 'success', 'data': analysis?.toMap()};
 
       // 특정 종목의 요약 정보 및 점수만 조회
       case 'GET_ANALYSIS_RECENT':
         final symbol = data['symbol'] as String;
-        final log = analysisProvider.getLogForSymbol(symbol);
-        if (log == null) return {'status': 'success', 'data': null};
+        final analysis = analysisProvider.getAnalysisForSymbol(symbol);
+        if (analysis == null) return {'status': 'success', 'data': null};
         
         return {
           'status': 'success',
           'data': {
-            'symbol': log.symbol,
-            'date': log.date,
-            'summary': log.summary,
-            'shortTermScore': log.shortTermScore,
-            'content': log.content,
+            'symbol': analysis.symbol,
+            'date': analysis.date,
+            'summary': analysis.summary,
+            'shortTermScore': analysis.shortTermScore,
+            'content': analysis.content,
           }
         };
 

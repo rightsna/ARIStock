@@ -1,123 +1,6 @@
 import 'package:hive/hive.dart';
 
-part 'analysis_model.g.dart';
-
-@HiveType(typeId: 1)
-class AnalysisStock {
-  @HiveField(0)
-  final String symbol;
-
-  @HiveField(1)
-  final String name;
-
-  AnalysisStock({
-    required this.symbol,
-    required this.name,
-  });
-}
-
-@HiveType(typeId: 2)
-class AnalysisLog {
-  @HiveField(0)
-  final String symbol;
-
-  @HiveField(1)
-  final String date;
-
-  @HiveField(2)
-  final String content;
-
-  @HiveField(3)
-  final double? shortTermScore;
-
-  @HiveField(4)
-  final double? mediumTermScore;
-
-  @HiveField(5)
-  final double? longTermScore;
-
-  @HiveField(6)
-  final String? summary;
-
-  @HiveField(7)
-  final String? otherOpinions;
-
-  @HiveField(8)
-  final String? userNote;
-
-  @HiveField(9)
-  final List<InvestmentIssue>? issues;
-
-  AnalysisLog({
-    required this.symbol,
-    required this.date,
-    required this.content,
-    this.shortTermScore,
-    this.mediumTermScore,
-    this.longTermScore,
-    this.summary,
-    this.otherOpinions,
-    this.userNote,
-    this.issues,
-  });
-
-  factory AnalysisLog.fromMap(Map<String, dynamic> map) {
-    return AnalysisLog(
-      symbol: map['symbol'] ?? '',
-      date: map['date'] ?? DateTime.now().toString().split(' ')[0],
-      content: map['content'] ?? '',
-      shortTermScore: _toDouble(map['shortTermScore']),
-      mediumTermScore: _toDouble(map['mediumTermScore']),
-      longTermScore: _toDouble(map['longTermScore']),
-      summary: map['summary'],
-      otherOpinions: map['otherOpinions'],
-      userNote: map['userNote'],
-      issues: map['issues'] != null 
-          ? (map['issues'] as List).map((i) => InvestmentIssue.fromMap(Map<String, dynamic>.from(i))).toList()
-          : null,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'symbol': symbol,
-      'date': date,
-      'content': content,
-      'shortTermScore': shortTermScore,
-      'mediumTermScore': mediumTermScore,
-      'longTermScore': longTermScore,
-      'summary': summary,
-      'otherOpinions': otherOpinions,
-      'userNote': userNote,
-      'issues': issues?.map((i) => i.toMap()).toList(),
-    };
-  }
-
-  static double? _toDouble(dynamic val) {
-    if (val == null) return null;
-    if (val is double) return val;
-    if (val is int) return val.toDouble();
-    return double.tryParse(val.toString());
-  }
-
-  AnalysisLog copyWith({
-    String? userNote,
-    List<InvestmentIssue>? issues,
-  }) {
-    return AnalysisLog(
-      symbol: symbol,
-      date: date,
-      content: content,
-      shortTermScore: shortTermScore,
-      mediumTermScore: mediumTermScore,
-      longTermScore: longTermScore,
-      summary: summary,
-      otherOpinions: otherOpinions,
-      userNote: userNote ?? this.userNote,
-      issues: issues ?? this.issues,
-    );
-  }
-}
+part 'investment_issue_model.g.dart';
 
 @HiveType(typeId: 3)
 class InvestmentIssue {
@@ -208,6 +91,56 @@ class InvestmentIssue {
 
   bool get isResolved => status == 'resolved' || endDate != null;
 
+  InvestmentIssue approve() {
+    return copyWith(
+      isAiAdded: false,
+      isAiModified: false,
+      history: history?.map((h) => h.approve()).toList(),
+    );
+  }
+
+  InvestmentIssue reject() {
+    // AI가 추가한 이슈라면 삭제 대상임을 표시 (상위에서 처리 필요하므로 상태만 변경하거나 null 반환 전략)
+    // 여기서는 기존 로직대로 isAiAdded면 삭제 로직을 따르도록 함 (Provider에서 체크)
+    
+    final filteredHistory = history?.where((h) => !h.isAiAdded).toList();
+    return copyWith(
+      isAiModified: false,
+      history: filteredHistory,
+    );
+  }
+
+  InvestmentIssue approveHistoryItem(IssueHistory targetHistory) {
+    final updatedHistory = history?.map((h) {
+      if (h.date == targetHistory.date && h.content == targetHistory.content) {
+        return h.approve();
+      }
+      return h;
+    }).toList();
+
+    final hasAnyAiHistory = updatedHistory?.any((h) => h.isAiAdded) ?? false;
+
+    return copyWith(
+      history: updatedHistory,
+      isAiModified: hasAnyAiHistory,
+    );
+  }
+
+  InvestmentIssue rejectHistoryItem(IssueHistory targetHistory) {
+    final filteredHistory = history?.where(
+      (h) => !(h.date == targetHistory.date &&
+               h.content == targetHistory.content &&
+               h.detail == targetHistory.detail),
+    ).toList();
+
+    final hasAnyAiHistory = filteredHistory?.any((h) => h.isAiAdded) ?? false;
+
+    return copyWith(
+      history: filteredHistory,
+      isAiModified: hasAnyAiHistory,
+    );
+  }
+
   InvestmentIssue copyWith({
     String? endDate,
     bool clearEndDate = false,
@@ -273,6 +206,10 @@ class IssueHistory {
       'detail': detail,
       'isAiAdded': isAiAdded,
     };
+  }
+
+  IssueHistory approve() {
+    return copyWith(isAiAdded: false);
   }
 
   IssueHistory copyWith({

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../models/analysis_model.dart';
+import '../../../models/investment_issue_model.dart';
 import '../../../../../shared/theme.dart';
 
 class GanttRow extends StatelessWidget {

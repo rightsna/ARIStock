@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/analysis_model.dart';
+import '../../models/stock_analysis_model.dart';
+import '../../models/investment_issue_model.dart';
 import '../../providers/analysis_provider.dart';
 import '../../../../shared/theme.dart';
 import 'widgets/gantt_empty_placeholder.dart';

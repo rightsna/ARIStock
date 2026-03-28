@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ari_plugin/ari_plugin.dart';
-import '../providers/analysis_provider.dart';
-import '../../../shared/theme.dart';
+import '../../providers/analysis_provider.dart';
+import '../../../../shared/theme.dart';
 
 class AnalysisFooterActions extends StatelessWidget {
   final AnalysisProvider provider;
@@ -67,9 +67,9 @@ class AnalysisFooterActions extends StatelessWidget {
         SnackBar(content: Text('AI에게 "$symbol" 리서치 업데이트를 요청했습니다...')),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ARI 서버와 연결되어 있지 않습니다.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ARI 서버와 연결되어 있지 않습니다.')));
     }
   }
 
@@ -89,7 +89,10 @@ class AnalysisFooterActions extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소', style: TextStyle(color: AppTheme.textMain38)),
+            child: const Text(
+              '취소',
+              style: TextStyle(color: AppTheme.textMain38),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -99,7 +102,10 @@ class AnalysisFooterActions extends StatelessWidget {
                 SnackBar(content: Text('"$symbol" 분석 데이터가 초기화되었습니다.')),
               );
             },
-            child: const Text('초기화', style: TextStyle(color: AppTheme.accentRed)),
+            child: const Text(
+              '초기화',
+              style: TextStyle(color: AppTheme.accentRed),
+            ),
           ),
         ],
       ),

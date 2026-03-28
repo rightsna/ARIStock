@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../shared/theme.dart';
+import '../../../../shared/theme.dart';
 
 class TrendSummaryCard extends StatelessWidget {
   final double? shortTerm;
@@ -22,14 +22,21 @@ class TrendSummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.textMain10, width: 1.5), // 노트 스타일의 실선 테두리
+        border: Border.all(
+          color: AppTheme.textMain10,
+          width: 1.5,
+        ), // 노트 스타일의 실선 테두리
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(
             children: [
-              Icon(Icons.auto_awesome_mosaic_rounded, color: AppTheme.primaryBlue, size: 16),
+              Icon(
+                Icons.auto_awesome_mosaic_rounded,
+                color: AppTheme.primaryBlue,
+                size: 16,
+              ),
               SizedBox(width: 8),
               Text(
                 'AI TREND ANALYSIS',
@@ -56,18 +63,30 @@ class TrendSummaryCard extends StatelessWidget {
             const SizedBox(height: 32),
             const Row(
               children: [
-                Icon(Icons.lightbulb_outline_rounded, color: AppTheme.primaryBlue, size: 16),
+                Icon(
+                  Icons.lightbulb_outline_rounded,
+                  color: AppTheme.primaryBlue,
+                  size: 16,
+                ),
                 SizedBox(width: 8),
                 Text(
                   '종합 전망 요약',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textMain,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               summary!,
-              style: const TextStyle(fontSize: 13, color: AppTheme.textSub, height: 1.6),
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppTheme.textSub,
+                height: 1.6,
+              ),
             ),
           ],
         ],
@@ -98,7 +117,11 @@ class TrendSummaryCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: AppTheme.textSub, fontSize: 10, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: AppTheme.textSub,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 12),
         Icon(icon, color: color, size: 20),

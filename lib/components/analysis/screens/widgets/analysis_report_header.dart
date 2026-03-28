@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/theme.dart';
+import '../../../../../shared/theme.dart';
 
 class AnalysisReportHeader extends StatelessWidget {
   final String stockName;

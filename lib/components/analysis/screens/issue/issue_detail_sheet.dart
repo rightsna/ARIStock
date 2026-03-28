@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:ari_plugin/ari_plugin.dart';
-import '../../models/analysis_model.dart';
+import '../../models/investment_issue_model.dart';
 import '../../providers/analysis_provider.dart';
 import '../../../../shared/theme.dart';
 
@@ -137,14 +137,11 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
             child: const Text('취소', style: TextStyle(color: AppTheme.textSub)),
           ),
           TextButton(
-            onPressed: () {
-              widget.provider.deleteHistoryItem(widget.issue, history);
+            onPressed: () async {
+              await widget.provider.deleteHistoryItem(widget.issue, history);
               Navigator.pop(ctx);
-              setState(() {
-                widget.issue.history?.removeWhere((h) => 
-                  h.date == history.date && h.content == history.content && h.detail == history.detail
-                );
-              });
+              // 프로바이더가 업데이트되었으므로 UI 갱신을 위해 setState 호출 (현재는 widget.issue가 업데이트되지 않으므로 사실상 의미가 적으나 에러 방지용)
+              setState(() {}); 
             },
             child: const Text('삭제', style: TextStyle(color: AppTheme.accentRed)),
           ),
