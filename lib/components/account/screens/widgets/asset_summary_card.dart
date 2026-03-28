@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../providers/account_provider.dart';
-import '../../../shared/theme.dart';
+import '../../providers/account_provider.dart';
+import '../../../../shared/theme.dart';
 
 class AssetSummaryCard extends StatelessWidget {
   final AccountProvider accountProvider;
@@ -57,7 +57,10 @@ class AssetSummaryCard extends StatelessWidget {
           Text(
             format.format(totalAssets),
             style: const TextStyle(
-                color: AppTheme.textMain, fontSize: 32, fontWeight: FontWeight.bold),
+              color: AppTheme.textMain,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -72,7 +75,7 @@ class AssetSummaryCard extends StatelessWidget {
               const SizedBox(width: 24),
               _buildSimpleStat('예수금', format.format(deposit)),
               const SizedBox(width: 24),
-	              _buildSimpleStat('보유 종목', '$stockCount개'),
+              _buildSimpleStat('보유 종목', '$stockCount개'),
             ],
           ),
         ],
@@ -105,18 +108,29 @@ class AssetSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleStat(String label, String value, {Color valueColor = AppTheme.textMain}) {
+  Widget _buildSimpleStat(
+    String label,
+    String value, {
+    Color valueColor = AppTheme.textMain,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: TextStyle(color: AppTheme.textMain.withValues(alpha: 0.5), fontSize: 12),
+          style: TextStyle(
+            color: AppTheme.textMain.withValues(alpha: 0.5),
+            fontSize: 12,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: TextStyle(color: valueColor, fontSize: 16, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: valueColor,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-import '../models/kiwoom_credentials_model.dart';
+import 'package:aristock/shared/models/kiwoom/kiwoom_credentials_model.dart';
 
 /// 키움 REST API 응답 모델
 class KiwoomResponse {
@@ -52,7 +52,7 @@ class KiwoomApiClient {
     debugPrint('Kiwoom API: Issuing token to ${credentials.baseUrl}');
     try {
       final response = await http.post(url, headers: headers, body: body);
-      
+
       if (!response.headers['content-type']!.contains('json')) {
         return KiwoomResponse(
           statusCode: response.statusCode,
@@ -69,7 +69,10 @@ class KiwoomApiClient {
         _credentials = credentials;
       }
 
-      return KiwoomResponse(statusCode: response.statusCode, body: responseBody);
+      return KiwoomResponse(
+        statusCode: response.statusCode,
+        body: responseBody,
+      );
     } catch (e) {
       return KiwoomResponse(
         statusCode: 500,
@@ -86,10 +89,7 @@ class KiwoomApiClient {
     String nextKey = '',
   }) async {
     if (_credentials == null || _credentials!.accessToken == null) {
-      return KiwoomResponse(
-        statusCode: 401,
-        body: {'error': '인증 토큰이 없습니다.'},
-      );
+      return KiwoomResponse(statusCode: 401, body: {'error': '인증 토큰이 없습니다.'});
     }
 
     final url = Uri.parse('$baseUrl$endpoint');
@@ -111,11 +111,13 @@ class KiwoomApiClient {
 
       Map<String, dynamic> responseBody;
       final contentType = response.headers['content-type'] ?? '';
-      
+
       if (contentType.contains('json')) {
         responseBody = jsonDecode(response.body) as Map<String, dynamic>;
       } else {
-        debugPrint('Kiwoom API Error: Non-JSON response received (Status ${response.statusCode})');
+        debugPrint(
+          'Kiwoom API Error: Non-JSON response received (Status ${response.statusCode})',
+        );
         responseBody = {
           'message': '서버에서 비정상적인 응답을 받았습니다. (HTML)',
           'rawStatus': response.statusCode,

@@ -3,14 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'shared/theme.dart';
 import 'components/layout/main_layout.dart';
-import 'components/account/providers/manual_portfolio_provider.dart';
+
 import 'components/account/models/stock.dart';
 import 'components/analysis/providers/analysis_provider.dart';
 import 'components/analysis/models/stock_analysis_model.dart';
 import 'components/analysis/models/investment_issue_model.dart';
 import 'components/account/providers/account_provider.dart';
-import 'components/account/models/portfolio_report_model.dart';
-import 'components/account/services/kiwoom_services.dart';
+
+import 'package:aristock/shared/repository/kiwoom/kiwoom_services.dart';
 import 'components/watchlist/providers/watchlist_provider.dart';
 import 'components/watchlist/models/watchlist_model.dart';
 import 'package:ari_plugin/ari_plugin.dart';
@@ -28,13 +28,12 @@ void main(List<String> args) async {
   Hive.registerAdapter(InvestmentIssueAdapter());
   Hive.registerAdapter(IssueHistoryAdapter());
 
-  Hive.registerAdapter(PortfolioReportAdapter());
+
   Hive.registerAdapter(StockAdapter());
   Hive.registerAdapter(WatchlistStockAdapter());
 
   // Provider 인스턴스 생성 및 초기화 대기
-  final portfolioProvider = ManualPortfolioProvider();
-  await portfolioProvider.init();
+
   
   final analysisProvider = AnalysisProvider();
   await analysisProvider.init();
@@ -70,7 +69,7 @@ void main(List<String> args) async {
     final isHeadless = args.contains('--headless');
 
     final handler = ARIProtocolHandler.create(
-      portfolioProvider: portfolioProvider,
+
       analysisProvider: analysisProvider,
       accountProvider: accountProvider,
       watchlistProvider: watchlistProvider,
@@ -90,7 +89,7 @@ void main(List<String> args) async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: portfolioProvider),
+
         ChangeNotifierProvider.value(value: analysisProvider),
         ChangeNotifierProvider.value(value: accountProvider),
         ChangeNotifierProvider.value(value: watchlistProvider),

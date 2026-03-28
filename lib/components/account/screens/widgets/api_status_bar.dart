@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../providers/account_provider.dart';
-import '../screens/api_key_setup_screen.dart';
-import '../../../shared/theme.dart';
+import '../../providers/account_provider.dart';
+import '../kiwoom_setup/kiwoom_setup_screen.dart';
+import '../../../../shared/theme.dart';
 
 class ApiStatusBar extends StatelessWidget {
   final AccountProvider accountProvider;
@@ -16,9 +16,11 @@ class ApiStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isConnected = accountProvider.hasApiKeys;
-    final statusColor = !isConnected 
-        ? AppTheme.textMain24 
-        : (accountProvider.credentials!.isMock ? Colors.amber : AppTheme.accentGreen);
+    final statusColor = !isConnected
+        ? AppTheme.textMain24
+        : (accountProvider.credentials!.isMock
+              ? Colors.amber
+              : AppTheme.accentGreen);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -62,11 +64,13 @@ class ApiStatusBar extends StatelessWidget {
                 Text(
                   accountProvider.lastError != null
                       ? '오류: ${accountProvider.lastError}'
-                      : isConnected 
-                          ? 'App Key: ${_maskKey(accountProvider.credentials!.appKey)}'
-                          : '실시간 데이터를 위해 API를 연동하세요',
+                      : isConnected
+                      ? 'App Key: ${_maskKey(accountProvider.credentials!.appKey)}'
+                      : '실시간 데이터를 위해 API를 연동하세요',
                   style: TextStyle(
-                    color: accountProvider.lastError != null ? AppTheme.accentRed : AppTheme.textMain.withValues(alpha: 0.4),
+                    color: accountProvider.lastError != null
+                        ? AppTheme.accentRed
+                        : AppTheme.textMain.withValues(alpha: 0.4),
                     fontSize: 11,
                   ),
                 ),
@@ -74,19 +78,21 @@ class ApiStatusBar extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: isConnected 
+            onPressed: isConnected
                 ? () => onDisconnect(context)
                 : () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ApiKeySetupScreen()),
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ApiKeySetupScreen(),
                     ),
+                  ),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
             child: Text(
               isConnected ? '연동해제' : '연동하기',
               style: TextStyle(
-                color: isConnected ? AppTheme.accentRed : AppTheme.primaryBlue, 
+                color: isConnected ? AppTheme.accentRed : AppTheme.primaryBlue,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),

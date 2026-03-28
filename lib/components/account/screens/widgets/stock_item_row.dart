@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../shared/theme.dart';
+import '../../../../shared/theme.dart';
 
 class StockItemRow extends StatelessWidget {
   final dynamic stock;
@@ -58,11 +58,18 @@ class StockItemRow extends StatelessWidget {
         children: [
           Text(
             stock.name,
-            style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(
+              color: AppTheme.textMain,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
           Text(
             '${stock.quantity}주',
-            style: TextStyle(color: AppTheme.textMain.withValues(alpha: 0.4), fontSize: 12),
+            style: TextStyle(
+              color: AppTheme.textMain.withValues(alpha: 0.4),
+              fontSize: 12,
+            ),
           ),
         ],
       ),
@@ -76,12 +83,17 @@ class StockItemRow extends StatelessWidget {
       children: [
         Text(
           format.format(stock.totalCurrentAmount),
-          style: const TextStyle(color: AppTheme.textMain, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: AppTheme.textMain,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         Text(
           '${profit > 0 ? '+' : ''}${profit.toStringAsFixed(2)}%',
           style: TextStyle(
-            color: profit > 0 ? AppTheme.accentGreen : (profit < 0 ? AppTheme.accentRed : AppTheme.textMain54),
+            color: profit > 0
+                ? AppTheme.accentGreen
+                : (profit < 0 ? AppTheme.accentRed : AppTheme.textMain54),
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),

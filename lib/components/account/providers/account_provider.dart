@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
-import '../models/kiwoom_credentials_model.dart';
-import '../models/portfolio_report_model.dart';
-import '../repositories/portfolio_report_repository.dart';
-import '../services/kiwoom_services.dart';
+import '../../../shared/models/kiwoom/kiwoom_credentials_model.dart';
+
+import 'package:aristock/shared/repository/kiwoom/kiwoom_services.dart';
 import '../models/stock.dart';
 
 /// 계좌 및 포트폴리오 데이터를 관리하는 Provider입니다.
 class AccountProvider with ChangeNotifier {
-  final PortfolioReportRepository _repository = PortfolioReportRepository();
   final KiwoomServiceBundle _kiwoom;
 
-  AccountProvider({
-    KiwoomServiceBundle? kiwoom,
-  }) : _kiwoom = kiwoom ?? KiwoomServiceBundle();
+  AccountProvider({KiwoomServiceBundle? kiwoom})
+    : _kiwoom = kiwoom ?? KiwoomServiceBundle();
 
-  PortfolioReport? _latestReport;
   bool _isLoading = false;
   KiwoomCredentials? _credentials;
   List<Map<String, dynamic>> _accounts = [];
@@ -32,7 +28,6 @@ class AccountProvider with ChangeNotifier {
   double _deposit = 0;
   List<Stock> _kiwoomStocks = [];
 
-  PortfolioReport? get latestReport => _latestReport;
   bool get isLoading => _isLoading;
   bool get isRefreshing => _isRefreshing;
   KiwoomCredentials? get credentials => _credentials;
@@ -64,7 +59,6 @@ class AccountProvider with ChangeNotifier {
     notifyListeners();
 
     _credentials = await KiwoomCredentials.load();
-    _latestReport = await _repository.getLatestReport();
 
     if (_credentials != null) {
       apiClient.setCredentials(_credentials!);
@@ -109,8 +103,9 @@ class AccountProvider with ChangeNotifier {
         if (accountResponse.isSuccess) {
           final body = accountResponse.body;
           debugPrint('Kiwoom Account List Response: $body');
-          
-          if (body['acnt_list'] != null && (body['acnt_list'] as List).isNotEmpty) {
+
+          if (body['acnt_list'] != null &&
+              (body['acnt_list'] as List).isNotEmpty) {
             final list = body['acnt_list'] as List;
             _accounts = list.map((e) {
               if (e is String) {
@@ -122,20 +117,35 @@ class AccountProvider with ChangeNotifier {
             }).toList();
             _selectedAccountNo = _accounts[0]['accNo'];
           } else if (body['acctNo'] != null) {
-            _accounts = [{'accNo': body['acctNo'].toString(), 'accNm': body['acctNm'] ?? '주계좌'}];
+            _accounts = [
+              {
+                'accNo': body['acctNo'].toString(),
+                'accNm': body['acctNm'] ?? '주계좌',
+              },
+            ];
             _selectedAccountNo = body['acctNo'].toString();
           } else if (body['accNo'] != null) {
-             _accounts = [{'accNo': body['accNo'].toString(), 'accNm': body['accNm'] ?? '주계좌'}];
+            _accounts = [
+              {
+                'accNo': body['accNo'].toString(),
+                'accNm': body['accNm'] ?? '주계좌',
+              },
+            ];
             _selectedAccountNo = body['accNo'].toString();
           }
-          
+
           if (_selectedAccountNo == null) {
             _lastError = '연동된 계좌를 찾을 수 없습니다.';
-            debugPrint('Kiwoom Error: No selected account no found in body: $body');
+            debugPrint(
+              'Kiwoom Error: No selected account no found in body: $body',
+            );
           }
         } else {
-          _lastError = '계좌 목록 조회 실패: ${accountResponse.body['message'] ?? accountResponse.statusCode}';
-          debugPrint('Kiwoom API Error [getAccounts]: Status ${accountResponse.statusCode}, Body: ${accountResponse.body}');
+          _lastError =
+              '계좌 목록 조회 실패: ${accountResponse.body['message'] ?? accountResponse.statusCode}';
+          debugPrint(
+            'Kiwoom API Error [getAccounts]: Status ${accountResponse.statusCode}, Body: ${accountResponse.body}',
+          );
         }
       }
 
@@ -156,37 +166,51 @@ class AccountProvider with ChangeNotifier {
   /// 특정 계좌의 상세 데이터 가져오기 (내부 메서드)
   Future<void> _fetchAccountDetails(String accountNo) async {
     // 1. 계좌 평가 현황 (kt00004)
-    final evaluationResponse = await accountService.getAccountEvaluation(accountNo: accountNo);
+    final evaluationResponse = await accountService.getAccountEvaluation(
+      accountNo: accountNo,
+    );
     debugPrint('Kiwoom API Log [kt00004]: ${evaluationResponse.body}');
 
     // 2. 예수금 상세 현황 (kt00001)
-    final depositResponse = await accountService.getDepositDetails(accountNo: accountNo);
+    final depositResponse = await accountService.getDepositDetails(
+      accountNo: accountNo,
+    );
     debugPrint('Kiwoom API Log [kt00001]: ${depositResponse.body}');
-    
+
     if (evaluationResponse.isSuccess) {
       final evalBody = evaluationResponse.body;
       final depBody = depositResponse.isSuccess ? depositResponse.body : {};
-      
+
       // 금액 데이터 파싱
       // 금액 데이터 파싱 (다양한 필드 시도)
-      _totalAssets = _parseDouble(evalBody['aset_evlt_amt'] ?? evalBody['tot_evlt_amt'] ?? evalBody['asset_ev_amt'] ?? '0');
-      _totalInvestment = _parseDouble(evalBody['tot_pur_amt'] ?? evalBody['pchs_amt_tot'] ?? evalBody['pur_amt'] ?? '0');
-      
+      _totalAssets = _parseDouble(
+        evalBody['aset_evlt_amt'] ??
+            evalBody['tot_evlt_amt'] ??
+            evalBody['asset_ev_amt'] ??
+            '0',
+      );
+      _totalInvestment = _parseDouble(
+        evalBody['tot_pur_amt'] ??
+            evalBody['pchs_amt_tot'] ??
+            evalBody['pur_amt'] ??
+            '0',
+      );
+
       // 예수금 데이터 파싱 (최대한 다양한 필드 시도)
       final List<String> depositKeys = [
         'fc_stk_krw_repl_set_amt', // 외화주식원화대용설정금액 (실제 로그에서 확인된 필드)
-        'd2_pres_cash',      // kt00001 (D+2)
-        'dnca_tot_amt',      // kt00001, kt00004
-        'd2_entra',          // kt00001, kt00004 (D+2)
-        'pres_cash_amt',     // kt00004 (현금)
-        'd2_evl_evlt_amt',   // kt00004
-        'd1_pres_cash',      // kt00001
-        'elwdpst_evlta',     // kt00001
-        'psbl_dpst_amt',     // 인출가능금액
+        'd2_pres_cash', // kt00001 (D+2)
+        'dnca_tot_amt', // kt00001, kt00004
+        'd2_entra', // kt00001, kt00004 (D+2)
+        'pres_cash_amt', // kt00004 (현금)
+        'd2_evl_evlt_amt', // kt00004
+        'd1_pres_cash', // kt00001
+        'elwdpst_evlta', // kt00001
+        'psbl_dpst_amt', // 인출가능금액
       ];
 
       double foundDeposit = 0;
-      
+
       // 1. kt00001 데이터에서 확인
       for (final key in depositKeys) {
         if (depBody[key] != null) {
@@ -218,26 +242,29 @@ class AccountProvider with ChangeNotifier {
         double stockEvalAmt = _parseDouble(evalBody['tot_est_amt']);
         foundDeposit = _totalAssets - stockEvalAmt;
         if (foundDeposit != 0) {
-          debugPrint('Using calculated Deposit (Total - Stocks): $foundDeposit');
+          debugPrint(
+            'Using calculated Deposit (Total - Stocks): $foundDeposit',
+          );
         }
       }
 
       _deposit = foundDeposit;
       debugPrint('Final Parsed Deposit: $_deposit');
-      
+
       // 수익률 계산 (API 값이 0일 경우 직접 산출)
-      double apiProfitRate = _parseDouble(evalBody['pft_rt']) != 0 
-          ? _parseDouble(evalBody['pft_rt']) 
+      double apiProfitRate = _parseDouble(evalBody['pft_rt']) != 0
+          ? _parseDouble(evalBody['pft_rt'])
           : _parseDouble(evalBody['evlt_pft_rt']) != 0
-              ? _parseDouble(evalBody['evlt_pft_rt'])
-              : _parseDouble(evalBody['lspft_rt']);
-      
+          ? _parseDouble(evalBody['evlt_pft_rt'])
+          : _parseDouble(evalBody['lspft_rt']);
+
       if (apiProfitRate == 0 && _totalInvestment > 0) {
-        _totalProfitRate = ((_totalAssets - _totalInvestment) / _totalInvestment) * 100;
+        _totalProfitRate =
+            ((_totalAssets - _totalInvestment) / _totalInvestment) * 100;
       } else {
         _totalProfitRate = apiProfitRate;
       }
-      
+
       _totalProfitLoss = _totalAssets - _totalInvestment;
 
       // 종목 리스트 파싱
@@ -246,8 +273,10 @@ class AccountProvider with ChangeNotifier {
         _kiwoomStocks = stockList.map((s) {
           final map = Map<String, dynamic>.from(s);
           final rawCode = map['stk_cd']?.toString() ?? '';
-          final cleanCode = rawCode.startsWith('A') ? rawCode.substring(1) : rawCode;
-          
+          final cleanCode = rawCode.startsWith('A')
+              ? rawCode.substring(1)
+              : rawCode;
+
           return Stock(
             id: cleanCode,
             symbol: cleanCode,
@@ -260,14 +289,19 @@ class AccountProvider with ChangeNotifier {
       }
     } else {
       _lastError = evaluationResponse.body['message']?.toString() ?? '상세 조회 실패';
-      debugPrint('Kiwoom API Error [_fetchAccountDetails]: Status ${evaluationResponse.statusCode}, Body: ${evaluationResponse.body}');
+      debugPrint(
+        'Kiwoom API Error [_fetchAccountDetails]: Status ${evaluationResponse.statusCode}, Body: ${evaluationResponse.body}',
+      );
     }
   }
 
   double _parseDouble(dynamic value) {
     if (value == null) return 0;
     // 콤마 제거 및 앞자리 0 제거
-    String valStr = value.toString().replaceAll(',', '').replaceAll(RegExp(r'^0+'), '');
+    String valStr = value
+        .toString()
+        .replaceAll(',', '')
+        .replaceAll(RegExp(r'^0+'), '');
     if (valStr.isEmpty) {
       // "0"이나 "000" 같은 경우 처리
       if (value.toString().contains('0')) return 0;
@@ -277,9 +311,17 @@ class AccountProvider with ChangeNotifier {
   }
 
   /// 계좌 연동 시나리오
-  Future<String?> connectAndFetchAccounts(String appKey, String appSecret, {bool isMock = false}) async {
+  Future<String?> connectAndFetchAccounts(
+    String appKey,
+    String appSecret, {
+    bool isMock = false,
+  }) async {
     _lastError = null;
-    final creds = KiwoomCredentials(appKey: appKey, appSecret: appSecret, isMock: isMock);
+    final creds = KiwoomCredentials(
+      appKey: appKey,
+      appSecret: appSecret,
+      isMock: isMock,
+    );
     apiClient.setCredentials(creds);
 
     try {
@@ -313,21 +355,6 @@ class AccountProvider with ChangeNotifier {
     _totalProfitLoss = 0;
     _totalProfitRate = 0;
     _kiwoomStocks = [];
-    notifyListeners();
-  }
-
-  Future<void> saveReport(String content) async {
-    final now = DateTime.now();
-    final timestamp = '${now.year}.${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    final report = PortfolioReport(date: timestamp, content: content);
-    await _repository.saveLatestReport(report);
-    _latestReport = report;
-    notifyListeners();
-  }
-
-  Future<void> clearReport() async {
-    await _repository.clearAll();
-    _latestReport = null;
     notifyListeners();
   }
 }

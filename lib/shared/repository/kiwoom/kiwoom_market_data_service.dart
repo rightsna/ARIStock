@@ -1,7 +1,7 @@
-import '../../../shared/models/market/candle.dart';
-import '../../../shared/models/market/market_tick.dart';
-import '../../../shared/models/market/market_timeframe.dart';
-import '../../../shared/services/technical/analyzer/candle_builder.dart';
+import 'package:aristock/shared/models/market/candle.dart';
+import 'package:aristock/shared/models/market/market_tick.dart';
+import 'package:aristock/shared/models/market/market_timeframe.dart';
+import 'package:aristock/shared/services/technical/analyzer/candle_builder.dart';
 import 'package:flutter/foundation.dart';
 import 'kiwoom_market_service.dart';
 

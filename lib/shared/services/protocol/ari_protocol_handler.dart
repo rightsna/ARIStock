@@ -6,15 +6,15 @@ import 'package:aristock/components/analysis/models/investment_issue_model.dart'
 import 'package:aristock/components/analysis/providers/analysis_provider.dart';
 import 'package:aristock/components/account/providers/account_provider.dart';
 import 'package:aristock/components/watchlist/providers/watchlist_provider.dart';
-import 'package:aristock/components/account/providers/manual_portfolio_provider.dart';
-import 'package:aristock/components/account/services/kiwoom_market_data_service.dart';
+
+import 'package:aristock/shared/repository/kiwoom/kiwoom_market_data_service.dart';
 import 'package:aristock/shared/models/market/market_timeframe.dart';
 import 'package:aristock/shared/services/log_provider.dart';
 import 'package:aristock/components/watchlist/models/watchlist_model.dart';
 
 /// AriFramework 표준을 준수하는 종목분석 프로토콜 핸들러입니다.
 class ARIProtocolHandler {
-  final ManualPortfolioProvider portfolioProvider;
+
   final AnalysisProvider analysisProvider;
   final AccountProvider accountProvider;
   final WatchlistProvider watchlistProvider;
@@ -22,7 +22,7 @@ class ARIProtocolHandler {
   final bool isHeadless;
 
   ARIProtocolHandler._({
-    required this.portfolioProvider,
+
     required this.analysisProvider,
     required this.accountProvider,
     required this.watchlistProvider,
@@ -31,7 +31,7 @@ class ARIProtocolHandler {
   });
 
   factory ARIProtocolHandler.create({
-    required ManualPortfolioProvider portfolioProvider,
+
     required AnalysisProvider analysisProvider,
     required AccountProvider accountProvider,
     required WatchlistProvider watchlistProvider,
@@ -39,7 +39,7 @@ class ARIProtocolHandler {
     required bool isHeadless,
   }) {
     return ARIProtocolHandler._(
-      portfolioProvider: portfolioProvider,
+
       analysisProvider: analysisProvider,
       accountProvider: accountProvider,
       watchlistProvider: watchlistProvider,
@@ -71,12 +71,8 @@ class ARIProtocolHandler {
     final bool useApi = accountProvider.hasApiKeys;
     return {
       'isApiConnected': useApi,
-      'totalAssets': useApi
-          ? accountProvider.totalAssets
-          : portfolioProvider.totalAssets,
-      'stockCount': useApi
-          ? accountProvider.kiwoomStocks.length
-          : portfolioProvider.stocks.length,
+      'totalAssets': accountProvider.totalAssets,
+      'stockCount': accountProvider.kiwoomStocks.length,
       'selectedAccountNo': accountProvider.selectedAccountNo,
     };
   }
@@ -203,13 +199,9 @@ class ARIProtocolHandler {
         return {
           'status': 'success',
           'data': {
-            'holdings': accountProvider.hasApiKeys
-                ? accountProvider.kiwoomStocks.map((e) => e.toMap()).toList()
-                : portfolioProvider.stocks.map((e) => e.toMap()).toList(),
+            'holdings': accountProvider.kiwoomStocks.map((e) => e.toMap()).toList(),
             'summary': {
-              'totalAssets': accountProvider.hasApiKeys
-                  ? accountProvider.totalAssets
-                  : portfolioProvider.totalAssets,
+              'totalAssets': accountProvider.totalAssets,
               'deposit': accountProvider.deposit,
               'selectedAccountNo': accountProvider.selectedAccountNo,
               'isRealAccount': accountProvider.hasApiKeys,
