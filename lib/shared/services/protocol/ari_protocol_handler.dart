@@ -18,6 +18,7 @@ class ARIProtocolHandler {
   final AccountProvider accountProvider;
   final WatchlistProvider watchlistProvider;
   final KiwoomMarketDataService marketDataService;
+  final bool isHeadless;
 
   ARIProtocolHandler._({
     required this.portfolioProvider,
@@ -25,6 +26,7 @@ class ARIProtocolHandler {
     required this.accountProvider,
     required this.watchlistProvider,
     required this.marketDataService,
+    required this.isHeadless,
   });
 
   factory ARIProtocolHandler.create({
@@ -33,6 +35,7 @@ class ARIProtocolHandler {
     required AccountProvider accountProvider,
     required WatchlistProvider watchlistProvider,
     required KiwoomMarketDataService marketDataService,
+    required bool isHeadless,
   }) {
     return ARIProtocolHandler._(
       portfolioProvider: portfolioProvider,
@@ -40,6 +43,7 @@ class ARIProtocolHandler {
       accountProvider: accountProvider,
       watchlistProvider: watchlistProvider,
       marketDataService: marketDataService,
+      isHeadless: isHeadless,
     );
   }
 
@@ -94,6 +98,7 @@ class ARIProtocolHandler {
       'ADD_WATCH_STOCK': '관심 종목 리스트에 새로운 종목 추가 [params: symbol, name?]',
       'REMOVE_WATCH_STOCK': '관심 종목 리스트에서 특정 종목 제거 [params: symbol]',
       'SELECT_STOCK': '앱 UI의 화면을 특정 종목 상세 화면으로 강제 이동 [params: symbol]',
+      'GET_APP_STATUS': '앱의 현재 실행 상태(Headless 여부 등) 조회 [no params]',
     };
   }
 
@@ -103,6 +108,17 @@ class ARIProtocolHandler {
   ) async {
     LogProvider.debug('ARI_EVENT', 'Handling event: $event');
     switch (event) {
+      // --- 앱 상태 관리 ---
+      case 'GET_APP_STATUS':
+        return {
+          'status': 'success',
+          'data': {
+            'isHeadless': isHeadless,
+            'appId': 'aristock',
+            'version': '1.0.3',
+          }
+        };
+
       // --- 1. 투자 분석 및 기록 관리 (Living Timeline) ---
       
       // 종합 분석 본문 및 점수 저장

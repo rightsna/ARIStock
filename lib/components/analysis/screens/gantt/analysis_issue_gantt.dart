@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/analysis_provider.dart';
 import '../../models/analysis_model.dart';
+import '../../providers/analysis_provider.dart';
 import '../../../../shared/theme.dart';
-import 'widgets/gantt_sticky_titles.dart';
-import 'widgets/gantt_time_axis.dart';
-import 'widgets/gantt_row.dart';
+import 'widgets/gantt_empty_placeholder.dart';
+import 'widgets/gantt_chart_container.dart';
+import '../issue/issue_detail_sheet.dart';
+import '../issue/add_issue_request_dialog.dart';
 
 class AnalysisIssueGantt extends StatefulWidget {
+  final String symbol;
   final List<InvestmentIssue> issues;
-  final Function(InvestmentIssue)? onIssueTap;
-  final VoidCallback? onAddRequest;
 
   const AnalysisIssueGantt({
     super.key,
+    required this.symbol,
     required this.issues,
-    this.onIssueTap,
-    this.onAddRequest,
   });
 
   @override
@@ -27,26 +26,11 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
   late DateTime _startDate;
   late DateTime _endDate;
   late int _totalDays;
+  bool _hideResolved = false;
+  bool _sortByImpact = false;
   final double _dayWidth = 60.0;
   final double _rowHeight = 85.0;
   final double _titleWidth = 160.0;
-  final Set<String> _expandedIssueTitles = {};
-  final ScrollController _horizontalController = ScrollController();
-
-  @override
-  void dispose() {
-    _horizontalController.dispose();
-    super.dispose();
-  }
-
-  double _getRowHeight(InvestmentIssue issue) {
-    final isAiUpdated = issue.isAiModified || issue.isAiAdded;
-    if (_expandedIssueTitles.contains(issue.title) || isAiUpdated) {
-      final historyCount = issue.history?.length ?? 0;
-      return _rowHeight + (historyCount * 30.0) + 10.0;
-    }
-    return _rowHeight;
-  }
 
   @override
   void initState() {
@@ -54,37 +38,92 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
     _calculateRange();
   }
 
+  @override
+  void didUpdateWidget(covariant AnalysisIssueGantt oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 이슈 상태 변화(컬러 등)를 즉시 반영하기 위해 항상 recalculate를 수행합니다.
+    setState(() {
+      _calculateRange();
+    });
+  }
+
   void _calculateRange() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
     if (widget.issues.isEmpty) {
-      _startDate = DateTime.now().subtract(const Duration(days: 7));
-      _endDate = DateTime.now();
+      _startDate = today.subtract(const Duration(days: 7));
+      _endDate = today.add(const Duration(days: 7));
     } else {
-      DateTime minDate = DateTime.now();
-      DateTime maxDate = DateTime.now();
+      DateTime minDate = today;
+      DateTime maxDate = today;
 
       for (var issue in widget.issues) {
-        final start = DateTime.parse(issue.startDate);
+        final issueStart = DateTime.parse(issue.startDate);
+        final start = DateTime(issueStart.year, issueStart.month, issueStart.day);
+        
         if (start.isBefore(minDate)) minDate = start;
+        if (start.isAfter(maxDate)) maxDate = start;
         
         if (issue.endDate != null) {
-          final end = DateTime.parse(issue.endDate!);
+          final issueEnd = DateTime.parse(issue.endDate!);
+          final end = DateTime(issueEnd.year, issueEnd.month, issueEnd.day);
           if (end.isAfter(maxDate)) maxDate = end;
+          if (end.isBefore(minDate)) minDate = end;
+        }
+
+        if (issue.history != null) {
+          for (var h in issue.history!) {
+            final hDateRaw = DateTime.parse(h.date);
+            final hDate = DateTime(hDateRaw.year, hDateRaw.month, hDateRaw.day);
+            if (hDate.isBefore(minDate)) minDate = hDate;
+            if (hDate.isAfter(maxDate)) maxDate = hDate;
+          }
         }
       }
       
-      _startDate = minDate.subtract(const Duration(days: 2));
-      _endDate = maxDate.add(const Duration(days: 2));
+      _startDate = minDate.subtract(const Duration(days: 3));
+      _endDate = maxDate.add(const Duration(days: 7));
     }
+    
     _totalDays = _endDate.difference(_startDate).inDays + 1;
-    if (_totalDays < 14) {
-      _totalDays = 14;
-      _endDate = _startDate.add(const Duration(days: 14));
+    if (_totalDays < 20) {
+      _totalDays = 20;
+      _endDate = _startDate.add(const Duration(days: 20));
     }
+  }
+
+  void _showDetails(InvestmentIssue issue) {
+    // 기본 동작: 이슈 상세 시트 표시
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => IssueDetailSheet(
+        symbol: widget.symbol, 
+        issue: issue, 
+        provider: context.read<AnalysisProvider>(),
+      ),
+    );
+  }
+
+  void _showAddRequest() {
+    // 기본 동작: 이슈 추가 요청 다이얼로그 표시
+    showDialog(
+      context: context,
+      builder: (ctx) => AddIssueRequestDialog(symbol: widget.symbol),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.issues.isEmpty && widget.onAddRequest == null) return const SizedBox.shrink();
+    List<InvestmentIssue> visibleIssues = _hideResolved 
+        ? widget.issues.where((i) => !i.isResolved).toList() 
+        : List.from(widget.issues);
+
+    if (_sortByImpact) {
+      visibleIssues.sort((a, b) => b.impact.compareTo(a.impact));
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,138 +145,55 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMain),
               ),
               const Spacer(),
-              if (widget.onAddRequest != null)
+              if (widget.issues.isNotEmpty) ...[
                 IconButton(
-                  onPressed: widget.onAddRequest,
-                  icon: const Icon(Icons.add_circle_outline, size: 20, color: AppTheme.primaryBlue),
-                  tooltip: '이슈 추가 또는 편집 요청',
+                  onPressed: () => setState(() => _sortByImpact = !_sortByImpact),
+                  icon: Icon(
+                    _sortByImpact ? Icons.sort : Icons.sort_outlined,
+                    size: 18, 
+                    color: _sortByImpact ? AppTheme.primaryBlue : AppTheme.textSub
+                  ),
+                  tooltip: _sortByImpact ? '원래 순서로 보기' : '중요도 순으로 정렬',
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
+                const SizedBox(width: 12),
+                IconButton(
+                  onPressed: () => setState(() => _hideResolved = !_hideResolved),
+                  icon: Icon(
+                    _hideResolved ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    size: 18, 
+                    color: _hideResolved ? AppTheme.primaryBlue : AppTheme.textSub
+                  ),
+                  tooltip: _hideResolved ? '해결된 이슈 숨김 중' : '해결된 이슈 표시 중',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 12),
+              ],
+              IconButton(
+                onPressed: _showAddRequest,
+                icon: const Icon(Icons.add_circle_outline, size: 20, color: AppTheme.primaryBlue),
+                tooltip: '이슈 추가 또는 편집 요청',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
             ],
           ),
         ),
         if (widget.issues.isNotEmpty)
-          _buildGanttContainer()
-        else
-          _buildEmptyPlaceholder(),
-      ],
-    );
-  }
-
-  Widget _buildEmptyPlaceholder() {
-    return GestureDetector(
-      onTap: widget.onAddRequest,
-      child: Container(
-        width: double.infinity,
-        height: 120,
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceWhite,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.textMain10, width: 1.5, style: BorderStyle.none),
-        ),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_chart_rounded, size: 32, color: AppTheme.textMain24),
-            SizedBox(height: 12),
-            Text('여기를 눌러 첫 투자 이슈를 생성해 보세요.', style: TextStyle(color: AppTheme.textMain38, fontSize: 13)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGanttContainer() {
-    final chartWidth = (_totalDays * _dayWidth) + 250.0;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.textMain10, width: 1.5),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GanttStickyTitles(
-            issues: widget.issues,
+          GanttChartContainer(
+            issues: visibleIssues,
+            startDate: _startDate,
+            totalDays: _totalDays,
+            dayWidth: _dayWidth,
             titleWidth: _titleWidth,
             rowHeight: _rowHeight,
-            expandedTitles: _expandedIssueTitles,
-            onIssueTap: (issue) => widget.onIssueTap?.call(issue),
-            getRowHeight: _getRowHeight,
-            onToggleExpand: (issue) {
-              setState(() {
-                if (_expandedIssueTitles.contains(issue.title)) {
-                  _expandedIssueTitles.remove(issue.title);
-                } else {
-                  _expandedIssueTitles.add(issue.title);
-                }
-              });
-            },
-            onApprove: (issue) {
-              setState(() => _expandedIssueTitles.add(issue.title));
-              context.read<AnalysisProvider>().approveIssueUpdate(issue);
-            },
-            onReject: (issue) => context.read<AnalysisProvider>().rejectIssueUpdate(issue),
-            onApproveHistory: (issue, history) {
-              setState(() => _expandedIssueTitles.add(issue.title));
-              context.read<AnalysisProvider>().approveHistoryUpdate(issue, history);
-            },
-            onRejectHistory: (issue, history) => context.read<AnalysisProvider>().rejectHistoryUpdate(issue, history),
-          ),
-          Expanded(
-            child: Scrollbar(
-              controller: _horizontalController,
-              thumbVisibility: true,
-              thickness: 8,
-              radius: const Radius.circular(4),
-              child: SingleChildScrollView(
-                controller: _horizontalController,
-                scrollDirection: Axis.horizontal,
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(
-                  width: chartWidth,
-                  child: Column(
-                    children: [
-                      GanttTimeAxis(
-                        startDate: _startDate,
-                        totalDays: _totalDays,
-                        dayWidth: _dayWidth,
-                      ),
-                      ...widget.issues.map((issue) {
-                        final isAiUpdated = issue.isAiModified || issue.isAiAdded;
-                        return GanttRow(
-                          issue: issue,
-                          startDate: _startDate,
-                          dayWidth: _dayWidth,
-                          rowHeight: _rowHeight,
-                          totalDays: _totalDays,
-                          isExpanded: _expandedIssueTitles.contains(issue.title) || isAiUpdated,
-                          onIssueTap: widget.onIssueTap,
-                          getRowHeight: _getRowHeight,
-                          onApprove: (issue) {
-                            setState(() => _expandedIssueTitles.add(issue.title));
-                            context.read<AnalysisProvider>().approveIssueUpdate(issue);
-                          },
-                          onReject: (issue) => context.read<AnalysisProvider>().rejectIssueUpdate(issue),
-                          onApproveHistory: (issue, history) {
-                            setState(() => _expandedIssueTitles.add(issue.title));
-                            context.read<AnalysisProvider>().approveHistoryUpdate(issue, history);
-                          },
-                          onRejectHistory: (issue, history) => context.read<AnalysisProvider>().rejectHistoryUpdate(issue, history),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+            onIssueTap: _showDetails,
+          )
+        else
+          GanttEmptyPlaceholder(onAddRequest: _showAddRequest),
+      ],
     );
   }
 }

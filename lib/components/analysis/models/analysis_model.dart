@@ -122,39 +122,41 @@ class AnalysisLog {
 @HiveType(typeId: 3)
 class InvestmentIssue {
   @HiveField(0)
-  final String title;
+  final String id;
 
   @HiveField(1)
-  final String startDate;
+  final String title;
 
   @HiveField(2)
-  final String? endDate;
+  final String startDate;
 
   @HiveField(3)
-  final bool isPositive;
+  final String? endDate;
 
   @HiveField(4)
-  final int impact;
+  final bool isPositive;
 
   @HiveField(5)
-  final String status;
+  final int impact;
 
   @HiveField(6)
-  final String? lastInvestigation;
+  final String status;
 
   @HiveField(7)
-  final List<IssueHistory>? history;
+  final String? lastInvestigation;
 
   @HiveField(8)
+  final List<IssueHistory>? history;
+
+  @HiveField(9)
   final bool isChecked;
 
-  @HiveField(10)
+  // 휘발성 필드 (Hive 저장 안함)
   final bool isAiAdded;
-
-  @HiveField(11)
   final bool isAiModified;
 
   InvestmentIssue({
+    required this.id,
     required this.title,
     required this.startDate,
     this.endDate,
@@ -170,6 +172,7 @@ class InvestmentIssue {
 
   factory InvestmentIssue.fromMap(Map<String, dynamic> map) {
     return InvestmentIssue(
+      id: map['id'] ?? DateTime.now().microsecondsSinceEpoch.toString(),
       title: map['title'] ?? '',
       startDate: map['startDate'] ?? DateTime.now().toString().split(' ')[0],
       endDate: map['endDate'],
@@ -188,6 +191,7 @@ class InvestmentIssue {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'title': title,
       'startDate': startDate,
       'endDate': endDate,
@@ -206,6 +210,7 @@ class InvestmentIssue {
 
   InvestmentIssue copyWith({
     String? endDate,
+    bool clearEndDate = false,
     String? status,
     String? lastInvestigation,
     List<IssueHistory>? history,
@@ -215,9 +220,10 @@ class InvestmentIssue {
     bool? isAiModified,
   }) {
     return InvestmentIssue(
+      id: id,
       title: title,
       startDate: startDate,
-      endDate: endDate ?? this.endDate,
+      endDate: clearEndDate ? null : (endDate ?? this.endDate),
       isPositive: isPositive,
       impact: impact ?? this.impact,
       status: status ?? this.status,
@@ -241,7 +247,7 @@ class IssueHistory {
   @HiveField(2)
   final String? detail;
 
-  @HiveField(3)
+  // 휘발성 필드 (Hive 저장 안함)
   final bool isAiAdded;
 
   IssueHistory({

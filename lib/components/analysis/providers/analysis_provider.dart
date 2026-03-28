@@ -47,7 +47,7 @@ class AnalysisProvider with ChangeNotifier {
     if (newLog.issues != null) {
       for (var newIssue in newLog.issues!) {
         final existingIndex = mergedIssues.indexWhere(
-          (i) => normalize(i.title) == normalize(newIssue.title)
+          (i) => i.id == newIssue.id || normalize(i.title) == normalize(newIssue.title)
         );
 
         if (existingIndex != -1) {
@@ -145,6 +145,7 @@ class AnalysisProvider with ChangeNotifier {
     // 만약 해당 이슈가 없다면 새로 추가
     if (!found) {
       final newIssue = InvestmentIssue(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
         title: issueTitle,
         startDate: DateTime.now().toString().split(' ')[0],
         isPositive: true, // 기본값
@@ -190,9 +191,10 @@ class AnalysisProvider with ChangeNotifier {
     if (_selectedLog == null || _selectedLog!.issues == null) return;
 
     final updatedIssues = _selectedLog!.issues!.map((i) {
-      if (i.title == issue.title && i.isPositive == issue.isPositive) {
+      if (i.id == issue.id) {
         return i.copyWith(
           endDate: endDate,
+          clearEndDate: endDate == null && status == 'active',
           status: status,
           lastInvestigation: lastInvestigation,
           history: history,
@@ -210,12 +212,13 @@ class AnalysisProvider with ChangeNotifier {
   }
 
   Future<void> toggleIssueResolved(InvestmentIssue issue) async {
-    final isResolved = issue.status == 'resolved';
+    final wasResolved = issue.isResolved;
     final today = DateTime.now().toString().split(' ')[0];
+    
     await updateIssue(
       issue, 
-      status: isResolved ? 'active' : 'resolved',
-      endDate: isResolved ? null : today,
+      status: wasResolved ? 'active' : 'resolved',
+      endDate: wasResolved ? null : today,
     );
   }
 
@@ -223,7 +226,7 @@ class AnalysisProvider with ChangeNotifier {
     if (_selectedLog == null || _selectedLog!.issues == null) return;
     
     final updatedIssues = _selectedLog!.issues!.where((i) => 
-      !(i.title == issue.title && i.isPositive == issue.isPositive)
+      i.id != issue.id
     ).toList();
 
     final updatedLog = _selectedLog!.copyWith(issues: updatedIssues);
@@ -236,7 +239,7 @@ class AnalysisProvider with ChangeNotifier {
     if (_selectedLog == null || _selectedLog!.issues == null) return;
     
     final updatedIssues = _selectedLog!.issues!.map((i) {
-      if (i.title == issue.title && i.isPositive == issue.isPositive) {
+      if (i.id == issue.id) {
         return i.copyWith(
           isAiAdded: false,
           isAiModified: false,
@@ -262,7 +265,7 @@ class AnalysisProvider with ChangeNotifier {
 
     // 수정된 항목이라면 강조를 끄고 최근 AI 히스토리를 삭제하거나 함
     final updatedIssues = _selectedLog!.issues!.map((i) {
-      if (i.title == issue.title && i.isPositive == issue.isPositive) {
+      if (i.id == issue.id) {
         final filteredHistory = i.history?.where((h) => !h.isAiAdded).toList();
         return i.copyWith(
           isAiModified: false,
@@ -282,7 +285,7 @@ class AnalysisProvider with ChangeNotifier {
     if (_selectedLog == null || _selectedLog!.issues == null) return;
     
     final updatedIssues = _selectedLog!.issues!.map((i) {
-      if (i.title == issue.title && i.isPositive == issue.isPositive) {
+      if (i.id == issue.id) {
         final updatedHistory = i.history?.map((h) {
           if (h.date == history.date && h.content == history.content) {
             return h.copyWith(isAiAdded: false);
@@ -315,7 +318,7 @@ class AnalysisProvider with ChangeNotifier {
     if (_selectedLog == null || _selectedLog!.issues == null) return;
     
     final updatedIssues = _selectedLog!.issues!.map((i) {
-      if (i.title == issue.title && i.isPositive == issue.isPositive) {
+      if (i.id == issue.id) {
         final filteredHistory = i.history?.where((h) => 
           !(h.date == history.date && h.content == history.content && h.detail == history.detail)
         ).toList();
@@ -341,6 +344,15 @@ class AnalysisProvider with ChangeNotifier {
     final updatedLog = _selectedLog!.copyWith(userNote: note);
     await _repository.saveLog(updatedLog); 
     _selectedLog = updatedLog;
+    notifyListeners();
+  }
+
+  Future<void> clearLog(String symbol) async {
+    await _repository.deleteStockRecord(symbol);
+    _stocks = await _repository.getAllStocks();
+    if (_selectedLog?.symbol == symbol) {
+      _selectedLog = null;
+    }
     notifyListeners();
   }
 
@@ -395,6 +407,7 @@ class AnalysisProvider with ChangeNotifier {
       // 없으면 신규 이슈로 프로토콜 가상 호출 (DB 저장 포함)
       final nowStr = DateTime.now().toString().split(' ')[0];
       final newIssue = InvestmentIssue(
+        id: 'debug_${DateTime.now().microsecondsSinceEpoch}',
         title: debugTitle,
         startDate: nowStr,
         isPositive: true,
@@ -423,6 +436,7 @@ class AnalysisProvider with ChangeNotifier {
 
     final issues = [
       InvestmentIssue(
+        id: 'sample_1',
         title: '반도체 공급 과잉 해소',
         startDate: d1,
         endDate: d3,
@@ -436,6 +450,7 @@ class AnalysisProvider with ChangeNotifier {
         ],
       ),
       InvestmentIssue(
+        id: 'sample_2',
         title: 'HBM 독점 공급 가능성',
         startDate: d2,
         isPositive: true,

@@ -34,11 +34,33 @@ class GanttRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final start = DateTime.parse(issue.startDate);
-    final end = issue.endDate != null ? DateTime.parse(issue.endDate!) : DateTime.now();
+    final issueStart = DateTime.parse(issue.startDate);
+    final start = DateTime(issueStart.year, issueStart.month, issueStart.day);
     
+    // 기본 종료일은 오늘
+    final now = DateTime.now();
+    DateTime maxEnd = DateTime(now.year, now.month, now.day);
+
+    // 실제 설정된 종료일이 있다면 그것으로 초기화
+    if (issue.endDate != null) {
+      final issueEnd = DateTime.parse(issue.endDate!);
+      maxEnd = DateTime(issueEnd.year, issueEnd.month, issueEnd.day);
+    }
+
+    // 히스토리 중 더 늦은 날짜가 있다면 확장 (진행 중인 이슈는 히스토리가 더 뒤에 있을 수 있음)
+    if (issue.history != null && issue.history!.isNotEmpty) {
+      for (var h in issue.history!) {
+        final hDateRaw = DateTime.parse(h.date);
+        final hDate = DateTime(hDateRaw.year, hDateRaw.month, hDateRaw.day);
+        if (hDate.isAfter(maxEnd)) maxEnd = hDate;
+      }
+    }
+    
+    // 시작일이 종료일보다 뒤라면 (데이터 오류 방지) 종료일을 시작일로 맞춤
+    if (maxEnd.isBefore(start)) maxEnd = start;
+
     final startOffset = start.difference(startDate).inDays * dayWidth;
-    final durationWidth = (end.difference(start).inDays + 1) * dayWidth;
+    final durationWidth = (maxEnd.difference(start).inDays + 1) * dayWidth;
     
     Color color = issue.isPositive ? AppTheme.accentRed : AppTheme.primaryBlue;
     if (issue.isResolved) color = AppTheme.accentGreen;

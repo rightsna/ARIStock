@@ -55,7 +55,7 @@ class GanttStickyTitles extends StatelessWidget {
           ),
           ...issues.map((issue) {
             final isAiUpdated = issue.isAiModified || issue.isAiAdded;
-            final isExpanded = expandedTitles.contains(issue.title) || isAiUpdated;
+            final isExpanded = expandedTitles.contains(issue.id) || isAiUpdated;
             final isModified = issue.isAiModified || issue.isAiAdded;
             
             return Container(

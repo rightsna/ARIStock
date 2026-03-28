@@ -6,6 +6,11 @@
 ### App ID
 `aristock`
 
+## Execution Modes
+- **GUI Mode (Default)**: Opens the full stock analysis dashboard.
+- **Headless Mode (`--headless`)**: Runs as a background service without a UI window. Ideal for AI-driven background tasks and data collection.
+  - Run command: `open -a ARIStock --args --headless` or `flutter run -d macos --args "--headless"`
+
 ## State
 가벼운 상태 스냅샷입니다. 상세 정보는 `GET_*` 커맨드로 조회하십시오.
 
@@ -40,6 +45,8 @@
 - `GET_TRADING_CONTEXT`
   - Params: `symbol`, `timeframe`, `limit?`
   - 응답: `lastCandle`, `movingAverages`, `rsi`, `macd`, `atr`, `bollingerBands`, `volumeAnalysis`, `trend`, `tradingSignalScore`, `tradingSignalText`, `warningSignals`
+- `GET_APP_STATUS`
+  - 현재 앱의 실행 모드(GUI/Headless)와 버전 정보 확인
 
 ### ANALYZE
 - `CALCULATE_INDICATORS`

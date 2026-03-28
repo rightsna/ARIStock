@@ -67,14 +67,24 @@ void main(List<String> args) async {
     WsManager.init(host: host, port: int.parse(port));
     WsManager.connect();
 
+    final isHeadless = args.contains('--headless');
+
     final handler = ARIProtocolHandler.create(
       portfolioProvider: portfolioProvider,
       analysisProvider: analysisProvider,
       accountProvider: accountProvider,
       watchlistProvider: watchlistProvider,
       marketDataService: marketDataService,
+      isHeadless: isHeadless,
     );
     handler.start();
+
+    // Headless 모드 체크 (UI 없이 백그라운드 서비스로 동작)
+    if (isHeadless) {
+      debugPrint('ARIStock: Running in headless mode...');
+      // 프로세스 유지를 위해 무한 대기
+      return;
+    }
   }
 
   runApp(

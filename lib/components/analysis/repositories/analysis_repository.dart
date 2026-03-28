@@ -36,6 +36,14 @@ class AnalysisRepository {
     return box.get(stockSymbol);
   }
 
+  // 특정 데이터 삭제
+  Future<void> deleteStockRecord(String symbol) async {
+    final sBox = await _openStockBox();
+    final lBox = await _openLogBox();
+    await sBox.delete(symbol);
+    await lBox.delete(symbol);
+  }
+
   // 모든 분석 데이터 삭제
   Future<void> clearAll() async {
     final sBox = await _openStockBox();

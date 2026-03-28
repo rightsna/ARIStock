@@ -115,39 +115,42 @@ class InvestmentIssueAdapter extends TypeAdapter<InvestmentIssue> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return InvestmentIssue(
-      title: fields[0] as String,
-      startDate: fields[1] as String,
-      endDate: fields[2] as String?,
-      isPositive: fields[3] as bool,
-      impact: fields[4] as int,
-      status: fields[5] as String,
-      lastInvestigation: fields[6] as String?,
-      history: (fields[7] as List?)?.cast<IssueHistory>(),
-      isChecked: fields[8] as bool,
+      id: fields[0] as String,
+      title: fields[1] as String,
+      startDate: fields[2] as String,
+      endDate: fields[3] as String?,
+      isPositive: fields[4] as bool,
+      impact: fields[5] as int,
+      status: fields[6] as String,
+      lastInvestigation: fields[7] as String?,
+      history: (fields[8] as List?)?.cast<IssueHistory>(),
+      isChecked: fields[9] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, InvestmentIssue obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
-      ..write(obj.title)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.startDate)
+      ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.endDate)
+      ..write(obj.startDate)
       ..writeByte(3)
-      ..write(obj.isPositive)
+      ..write(obj.endDate)
       ..writeByte(4)
-      ..write(obj.impact)
+      ..write(obj.isPositive)
       ..writeByte(5)
-      ..write(obj.status)
+      ..write(obj.impact)
       ..writeByte(6)
-      ..write(obj.lastInvestigation)
+      ..write(obj.status)
       ..writeByte(7)
-      ..write(obj.history)
+      ..write(obj.lastInvestigation)
       ..writeByte(8)
+      ..write(obj.history)
+      ..writeByte(9)
       ..write(obj.isChecked);
   }
 

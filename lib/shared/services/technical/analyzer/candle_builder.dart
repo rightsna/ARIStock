@@ -58,11 +58,11 @@ class CandleBuilder {
       
       dynamic getVal(String key) => itemMap[key] ?? itemMap[key.toLowerCase()] ?? itemMap[key.toUpperCase()];
 
-      final close = double.tryParse((getVal('stck_clpr') ?? getVal('stk_clpr') ?? '0').toString()) ?? 0;
-      final open = double.tryParse((getVal('stck_oprc') ?? getVal('stk_oprc') ?? '0').toString()) ?? 0;
-      final high = double.tryParse((getVal('stck_hgpr') ?? getVal('stk_hgpr') ?? '0').toString()) ?? 0;
-      final low = double.tryParse((getVal('stck_lwpr') ?? getVal('stk_lwpr') ?? '0').toString()) ?? 0;
-      final volume = int.tryParse((getVal('cntg_vol') ?? getVal('stck_cntg_vol') ?? getVal('acml_vol') ?? '0').toString()) ?? 0;
+      final close = double.tryParse((getVal('stck_clpr') ?? getVal('stk_clpr') ?? getVal('cur_prc') ?? '0').toString())?.abs() ?? 0;
+      final open = double.tryParse((getVal('stck_oprc') ?? getVal('stk_oprc') ?? getVal('open_pric') ?? '0').toString())?.abs() ?? 0;
+      final high = double.tryParse((getVal('stck_hgpr') ?? getVal('stk_hgpr') ?? getVal('high_pric') ?? '0').toString())?.abs() ?? 0;
+      final low = double.tryParse((getVal('stck_lwpr') ?? getVal('stk_lwpr') ?? getVal('low_pric') ?? '0').toString())?.abs() ?? 0;
+      final volume = int.tryParse((getVal('cntg_vol') ?? getVal('stck_cntg_vol') ?? getVal('acml_vol') ?? getVal('trde_qty') ?? '0').toString())?.abs().toInt() ?? 0;
 
       // 시간 파싱
       late DateTime timestamp;
@@ -83,18 +83,30 @@ class CandleBuilder {
       } else {
         // 분봉: stck_cntg_hour 사용 (HHmmss 형식) + baseDate
         var timeStr = (getVal('stck_cntg_hour') ?? getVal('stk_cntg_hour') ?? '').toString();
-        // 5자리 시간(93000)을 6자리(093000)로 보정
-        if (timeStr.length == 5) timeStr = '0$timeStr';
+        var fullTimeStr = getVal('cntr_tm')?.toString() ?? ''; // YYYYMMDDHHmmss
         
-        if (timeStr.length != 6 || baseDate == null) {
-          return null;
+        if (fullTimeStr.length == 14) {
+          final year = int.parse(fullTimeStr.substring(0, 4));
+          final month = int.parse(fullTimeStr.substring(4, 6));
+          final day = int.parse(fullTimeStr.substring(6, 8));
+          final hour = int.parse(fullTimeStr.substring(8, 10));
+          final minute = int.parse(fullTimeStr.substring(10, 12));
+          final second = int.parse(fullTimeStr.substring(12, 14));
+          timestamp = DateTime(year, month, day, hour, minute, second);
+        } else {
+          // 5자리 시간(93000)을 6자리(093000)로 보정
+          if (timeStr.length == 5) timeStr = '0$timeStr';
+          
+          if (timeStr.length != 6 || baseDate == null) {
+            return null;
+          }
+
+          final hour = int.parse(timeStr.substring(0, 2));
+          final minute = int.parse(timeStr.substring(2, 4));
+          final second = int.parse(timeStr.substring(4, 6));
+
+          timestamp = baseDate.copyWith(hour: hour, minute: minute, second: second);
         }
-
-        final hour = int.parse(timeStr.substring(0, 2));
-        final minute = int.parse(timeStr.substring(2, 4));
-        final second = int.parse(timeStr.substring(4, 6));
-
-        timestamp = baseDate.copyWith(hour: hour, minute: minute, second: second);
       }
 
       return Candle(

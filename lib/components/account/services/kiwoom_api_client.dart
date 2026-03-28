@@ -50,17 +50,32 @@ class KiwoomApiClient {
     });
 
     debugPrint('Kiwoom API: Issuing token to ${credentials.baseUrl}');
-    final response = await http.post(url, headers: headers, body: body);
-    final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+      
+      if (!response.headers['content-type']!.contains('json')) {
+        return KiwoomResponse(
+          statusCode: response.statusCode,
+          body: {'message': '서버가 JSON이 아닌 응답을 반환했습니다. (HTML 가능성)'},
+        );
+      }
 
-    if (response.statusCode == 200 && responseBody['token'] != null) {
-      credentials.accessToken = responseBody['token'] as String;
-      credentials.tokenExpiry = DateTime.now().add(const Duration(hours: 23));
-      await KiwoomCredentials.save(credentials);
-      _credentials = credentials;
+      final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && responseBody['token'] != null) {
+        credentials.accessToken = responseBody['token'] as String;
+        credentials.tokenExpiry = DateTime.now().add(const Duration(hours: 23));
+        await KiwoomCredentials.save(credentials);
+        _credentials = credentials;
+      }
+
+      return KiwoomResponse(statusCode: response.statusCode, body: responseBody);
+    } catch (e) {
+      return KiwoomResponse(
+        statusCode: 500,
+        body: {'message': '토큰 요청 중 오류 발생: $e'},
+      );
     }
-
-    return KiwoomResponse(statusCode: response.statusCode, body: responseBody);
   }
 
   Future<KiwoomResponse> callApi({
@@ -87,21 +102,40 @@ class KiwoomApiClient {
     };
 
     debugPrint('Kiwoom API Call: $apiId ($endpoint)');
-    final response = await http.post(
-      url,
-      headers: headers,
-      body: jsonEncode(params),
-    );
-    final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+    try {
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(params),
+      );
 
-    debugPrint('Kiwoom API Response: $apiId Status ${response.statusCode}');
+      Map<String, dynamic> responseBody;
+      final contentType = response.headers['content-type'] ?? '';
+      
+      if (contentType.contains('json')) {
+        responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        debugPrint('Kiwoom API Error: Non-JSON response received (Status ${response.statusCode})');
+        responseBody = {
+          'message': '서버에서 비정상적인 응답을 받았습니다. (HTML)',
+          'rawStatus': response.statusCode,
+        };
+      }
 
-    return KiwoomResponse(
-      statusCode: response.statusCode,
-      body: responseBody,
-      contYn: response.headers['cont-yn'],
-      nextKey: response.headers['next-key'],
-    );
+      debugPrint('Kiwoom API Response: $apiId Status ${response.statusCode}');
+
+      return KiwoomResponse(
+        statusCode: response.statusCode,
+        body: responseBody,
+        contYn: response.headers['cont-yn'],
+        nextKey: response.headers['next-key'],
+      );
+    } catch (e) {
+      return KiwoomResponse(
+        statusCode: 500,
+        body: {'message': 'API 호출 중 오류 발생: $e'},
+      );
+    }
   }
 
   Future<bool> authenticate(KiwoomCredentials credentials) async {
