@@ -5,7 +5,7 @@ import '../models/kiwoom_credentials_model.dart';
 import '../models/portfolio_report_model.dart';
 import '../repositories/portfolio_report_repository.dart';
 import '../services/kiwoom_services.dart';
-import '../../portfolio/models/stock.dart';
+import '../models/stock.dart';
 
 /// 계좌 및 포트폴리오 데이터를 관리하는 Provider입니다.
 class AccountProvider with ChangeNotifier {

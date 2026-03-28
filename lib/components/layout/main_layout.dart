@@ -8,7 +8,7 @@ import '../../../shared/theme.dart';
 import 'package:ari_plugin/ari_plugin.dart';
 
 /// 앱의 메인 레이아웃을 담당합니다.
-/// 상단 탭 메뉴(종목분석-포트폴리오)를 포함하며 프리미엄한 디자인을 지향합니다.
+/// 상단 탭 메뉴(종목분석-계좌)를 포함하며 프리미엄한 디자인을 지향합니다.
 class MainLayout extends StatelessWidget {
   const MainLayout({super.key});
 
@@ -123,7 +123,7 @@ class MainLayout extends StatelessWidget {
           bottom: TabBar(
             tabs: const [
               Tab(text: '종목분석'),
-              Tab(text: '포트폴리오'),
+              Tab(text: '계좌'),
             ],
             indicatorColor: AppTheme.primaryBlue,
             indicatorWeight: 3,

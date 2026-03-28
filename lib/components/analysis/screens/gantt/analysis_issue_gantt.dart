@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/stock_analysis_model.dart';
 import '../../models/investment_issue_model.dart';
 import '../../providers/analysis_provider.dart';
 import '../../../../shared/theme.dart';
@@ -61,11 +60,15 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
 
       for (var issue in widget.issues) {
         final issueStart = DateTime.parse(issue.startDate);
-        final start = DateTime(issueStart.year, issueStart.month, issueStart.day);
-        
+        final start = DateTime(
+          issueStart.year,
+          issueStart.month,
+          issueStart.day,
+        );
+
         if (start.isBefore(minDate)) minDate = start;
         if (start.isAfter(maxDate)) maxDate = start;
-        
+
         if (issue.endDate != null) {
           final issueEnd = DateTime.parse(issue.endDate!);
           final end = DateTime(issueEnd.year, issueEnd.month, issueEnd.day);
@@ -82,11 +85,11 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
           }
         }
       }
-      
+
       _startDate = minDate.subtract(const Duration(days: 3));
       _endDate = maxDate.add(const Duration(days: 7));
     }
-    
+
     _totalDays = _endDate.difference(_startDate).inDays + 1;
     if (_totalDays < 20) {
       _totalDays = 20;
@@ -101,8 +104,8 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => IssueDetailSheet(
-        symbol: widget.symbol, 
-        issue: issue, 
+        symbol: widget.symbol,
+        issue: issue,
         provider: context.read<AnalysisProvider>(),
       ),
     );
@@ -118,8 +121,8 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
 
   @override
   Widget build(BuildContext context) {
-    List<InvestmentIssue> visibleIssues = _hideResolved 
-        ? widget.issues.where((i) => !i.isResolved).toList() 
+    List<InvestmentIssue> visibleIssues = _hideResolved
+        ? widget.issues.where((i) => !i.isResolved).toList()
         : List.from(widget.issues);
 
     if (_sortByImpact) {
@@ -134,25 +137,33 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
           child: Row(
             children: [
               Container(
-                width: 3, height: 16,
+                width: 3,
+                height: 16,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue, 
+                  color: AppTheme.primaryBlue,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(width: 8),
               const Text(
                 '투자 이슈 매니지먼트 보드',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textMain),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textMain,
+                ),
               ),
               const Spacer(),
               if (widget.issues.isNotEmpty) ...[
                 IconButton(
-                  onPressed: () => setState(() => _sortByImpact = !_sortByImpact),
+                  onPressed: () =>
+                      setState(() => _sortByImpact = !_sortByImpact),
                   icon: Icon(
                     _sortByImpact ? Icons.sort : Icons.sort_outlined,
-                    size: 18, 
-                    color: _sortByImpact ? AppTheme.primaryBlue : AppTheme.textSub
+                    size: 18,
+                    color: _sortByImpact
+                        ? AppTheme.primaryBlue
+                        : AppTheme.textSub,
                   ),
                   tooltip: _sortByImpact ? '원래 순서로 보기' : '중요도 순으로 정렬',
                   padding: EdgeInsets.zero,
@@ -160,11 +171,16 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
                 ),
                 const SizedBox(width: 12),
                 IconButton(
-                  onPressed: () => setState(() => _hideResolved = !_hideResolved),
+                  onPressed: () =>
+                      setState(() => _hideResolved = !_hideResolved),
                   icon: Icon(
-                    _hideResolved ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    size: 18, 
-                    color: _hideResolved ? AppTheme.primaryBlue : AppTheme.textSub
+                    _hideResolved
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 18,
+                    color: _hideResolved
+                        ? AppTheme.primaryBlue
+                        : AppTheme.textSub,
                   ),
                   tooltip: _hideResolved ? '해결된 이슈 숨김 중' : '해결된 이슈 표시 중',
                   padding: EdgeInsets.zero,
@@ -174,7 +190,11 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
               ],
               IconButton(
                 onPressed: _showAddRequest,
-                icon: const Icon(Icons.add_circle_outline, size: 20, color: AppTheme.primaryBlue),
+                icon: const Icon(
+                  Icons.add_circle_outline,
+                  size: 20,
+                  color: AppTheme.primaryBlue,
+                ),
                 tooltip: '이슈 추가 또는 편집 요청',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),

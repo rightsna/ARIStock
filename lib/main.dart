@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'shared/theme.dart';
 import 'components/layout/main_layout.dart';
-import 'components/portfolio/providers/portfolio_provider.dart';
-import 'components/portfolio/models/stock.dart';
+import 'components/account/providers/manual_portfolio_provider.dart';
+import 'components/account/models/stock.dart';
 import 'components/analysis/providers/analysis_provider.dart';
 import 'components/analysis/models/stock_analysis_model.dart';
 import 'components/analysis/models/investment_issue_model.dart';
@@ -33,7 +33,7 @@ void main(List<String> args) async {
   Hive.registerAdapter(WatchlistStockAdapter());
 
   // Provider 인스턴스 생성 및 초기화 대기
-  final portfolioProvider = PortfolioProvider();
+  final portfolioProvider = ManualPortfolioProvider();
   await portfolioProvider.init();
   
   final analysisProvider = AnalysisProvider();

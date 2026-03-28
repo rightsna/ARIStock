@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/account_provider.dart';
 import '../../analysis/providers/analysis_provider.dart';
-import '../../portfolio/providers/portfolio_provider.dart';
+import '../providers/manual_portfolio_provider.dart';
 import '../../../shared/theme.dart';
 import 'api_key_setup_screen.dart';
 import '../widgets/api_status_bar.dart';
@@ -18,7 +18,7 @@ class AccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accountProvider = context.watch<AccountProvider>();
-    final portfolioProvider = context.watch<PortfolioProvider>();
+    final portfolioProvider = context.watch<ManualPortfolioProvider>();
 
     // API 키가 없더라도 수동 입력된 종목이 있으면 메인 뷰를 보여줌
     final bool hasData = accountProvider.hasApiKeys || portfolioProvider.stocks.isNotEmpty;
@@ -36,7 +36,7 @@ class AccountScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMainView(BuildContext context, AccountProvider accountProvider, PortfolioProvider portfolio) {
+  Widget _buildMainView(BuildContext context, AccountProvider accountProvider, ManualPortfolioProvider portfolio) {
     final format = NumberFormat.currency(locale: 'ko_KR', symbol: '₩');
     final bool useApiData = accountProvider.hasApiKeys;
     
@@ -56,7 +56,7 @@ class AccountScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      '내 포트폴리오',
+                      '나의 계좌',
                       style: TextStyle(color: AppTheme.textMain, fontSize: 28, fontWeight: FontWeight.bold),
                     ),
                     IconButton(
@@ -125,7 +125,7 @@ class AccountScreen extends StatelessWidget {
               key: Key(stock.id),
               direction: isApiData ? DismissDirection.none : DismissDirection.endToStart,
               background: _buildDeleteBackground(),
-              onDismissed: (_) => context.read<PortfolioProvider>().removeStock(stock.id),
+              onDismissed: (_) => context.read<ManualPortfolioProvider>().removeStock(stock.id),
               child: StockItemRow(
                 stock: stock,
                 format: format,

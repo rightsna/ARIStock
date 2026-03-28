@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../portfolio/providers/portfolio_provider.dart';
-import '../../portfolio/models/stock.dart';
+import '../providers/manual_portfolio_provider.dart';
+import '../models/stock.dart';
 import '../../../shared/theme.dart';
 
 class AddStockBottomSheet extends StatefulWidget {
@@ -76,7 +76,7 @@ class _AddStockBottomSheetState extends State<AddStockBottomSheet> {
                   currentPrice: double.tryParse(_priceController.text) ?? 0,
                 );
                 
-                context.read<PortfolioProvider>().addStock(stock);
+                context.read<ManualPortfolioProvider>().addStock(stock);
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(

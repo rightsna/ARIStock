@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 import '../models/stock.dart';
 
 /// 포트폴리오의 상태(종목 리스트, 총 자산 등)를 관리하는 클래스입니다.
-class PortfolioProvider with ChangeNotifier {
+class ManualPortfolioProvider with ChangeNotifier {
   static const String boxName = 'manual_portfolio_box';
   List<Stock> _stocks = [];
 

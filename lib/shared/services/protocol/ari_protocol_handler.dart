@@ -6,8 +6,7 @@ import 'package:aristock/components/analysis/models/investment_issue_model.dart'
 import 'package:aristock/components/analysis/providers/analysis_provider.dart';
 import 'package:aristock/components/account/providers/account_provider.dart';
 import 'package:aristock/components/watchlist/providers/watchlist_provider.dart';
-import 'package:aristock/components/portfolio/providers/portfolio_provider.dart';
-// import 'package:aristock/components/portfolio/models/stock.dart';
+import 'package:aristock/components/account/providers/manual_portfolio_provider.dart';
 import 'package:aristock/components/account/services/kiwoom_market_data_service.dart';
 import 'package:aristock/shared/models/market/market_timeframe.dart';
 import 'package:aristock/shared/services/log_provider.dart';
@@ -15,7 +14,7 @@ import 'package:aristock/components/watchlist/models/watchlist_model.dart';
 
 /// AriFramework 표준을 준수하는 종목분석 프로토콜 핸들러입니다.
 class ARIProtocolHandler {
-  final PortfolioProvider portfolioProvider;
+  final ManualPortfolioProvider portfolioProvider;
   final AnalysisProvider analysisProvider;
   final AccountProvider accountProvider;
   final WatchlistProvider watchlistProvider;
@@ -32,7 +31,7 @@ class ARIProtocolHandler {
   });
 
   factory ARIProtocolHandler.create({
-    required PortfolioProvider portfolioProvider,
+    required ManualPortfolioProvider portfolioProvider,
     required AnalysisProvider analysisProvider,
     required AccountProvider accountProvider,
     required WatchlistProvider watchlistProvider,
@@ -199,7 +198,7 @@ class ARIProtocolHandler {
           }
         };
 
-      // --- 2. 계정(Portfolio) 및 자산 관리 ---
+      // --- 2. 계좌(Account) 및 자산 관리 ---
       case 'GET_ACCOUNT_INFO':
         return {
           'status': 'success',
