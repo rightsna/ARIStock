@@ -4,24 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:aristock/shared/models/kiwoom/kiwoom_credentials_model.dart';
+import 'package:aristock/shared/models/kiwoom/kiwoom_response_model.dart';
 
-/// 키움 REST API 응답 모델
-class KiwoomResponse {
-  final int statusCode;
-  final Map<String, dynamic> body;
-  final String? contYn;
-  final String? nextKey;
+export 'package:aristock/shared/models/kiwoom/kiwoom_response_model.dart';
 
-  KiwoomResponse({
-    required this.statusCode,
-    required this.body,
-    this.contYn,
-    this.nextKey,
-  });
 
-  bool get isSuccess => statusCode == 200;
-  bool get hasNext => contYn == 'Y' && nextKey != null && nextKey!.isNotEmpty;
-}
 
 /// 인증과 공통 HTTP 호출을 담당하는 키움 API 클라이언트
 class KiwoomApiClient {

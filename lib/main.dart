@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'shared/theme.dart';
 import 'components/layout/main_layout.dart';
 
-import 'components/account/models/stock.dart';
+import 'package:aristock/shared/models/kiwoom/kiwoom_models.dart';
 import 'components/analysis/providers/analysis_provider.dart';
 import 'components/analysis/models/stock_analysis_model.dart';
 import 'components/analysis/models/investment_issue_model.dart';

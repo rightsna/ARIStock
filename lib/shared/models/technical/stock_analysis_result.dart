@@ -1,5 +1,5 @@
-import '../../../models/market/candle.dart';
-import '../../../models/technical/indicator_results.dart';
+import '../market/candle.dart';
+import 'indicator_results.dart';
 
 /// 종목의 모든 기술적 분석 결과를 담는 통합 모델
 /// 에이전트에게 전달되는 최종 분석 결과
@@ -37,6 +37,50 @@ class StockAnalysisResult {
     required this.volumeAnalysis,
     required this.trend,
   });
+
+  factory StockAnalysisResult.fromCandles({
+    required String symbol,
+    required List<Candle> candles,
+    List<int> maPeriods = const [20, 50, 200],
+  }) {
+    if (candles.isEmpty) {
+      throw ArgumentError('Candles list is empty');
+    }
+
+    // 1. 이동평균 계산
+    final closePrices = candles.map((c) => c.close).toList();
+    final maValues = <int, double>{};
+    for (final period in maPeriods) {
+      final smaValues = MovingAverageResult.sma(closePrices, period);
+      final lastValue =
+          smaValues.lastWhere((s) => s != null, orElse: () => null);
+      if (lastValue != null) {
+        maValues[period] = lastValue;
+      }
+    }
+    final movingAverages = MovingAverageResult(values: maValues);
+
+    // 2. 개별 지표 계산 (새로운 모델 생성 패턴 활용)
+    final rsi = RSIResult.fromCandles(candles);
+    final macd = MacdResult.fromCandles(candles);
+    final atr = ATRResult.fromCandles(candles);
+    final bollingerBands = BollingerBandsResult.fromCandles(candles);
+    final volumeAnalysis = VolumeAnalysisResult.fromCandles(candles);
+    final trend = TrendResult.fromCandles(candles);
+
+    return StockAnalysisResult(
+      symbol: symbol,
+      timestamp: DateTime.now(),
+      lastCandle: candles.last,
+      movingAverages: movingAverages,
+      rsi: rsi,
+      macd: macd,
+      atr: atr,
+      bollingerBands: bollingerBands,
+      volumeAnalysis: volumeAnalysis,
+      trend: trend,
+    );
+  }
 
   /// 매매 신호 우선순위 점수 (0-100)
   /// 양수 = 매수 신호, 음수 = 매도 신호, 0 = 중립
@@ -116,7 +160,7 @@ class StockAnalysisResult {
   }
 
   /// JSON 직렬화 (에이전트 전송용)
-  Map<String, dynamic> toMap() {
+    Map<String, dynamic> toMap() {
     return {
       'symbol': symbol,
       'timestamp': timestamp.toIso8601String(),
@@ -134,6 +178,84 @@ class StockAnalysisResult {
       'tradingSignalText': tradingSignalText,
       'warningSignals': warningSignals,
     };
+  }
+
+  /// 빠른 분석 (성능 최적화된 버전)
+  /// 필요한 지표만 선택적으로 계산해서 Map으로 반환
+  static Map<String, dynamic> analyzeFast({
+    required String symbol,
+    required List<Candle> candles,
+    List<String> indicators = const [
+      'movingAverages',
+      'rsi',
+      'macd',
+      'trend',
+    ],
+  }) {
+    final result = <String, dynamic>{
+      'symbol': symbol,
+      'timestamp': DateTime.now().toIso8601String(),
+      'price': candles.last.close,
+    };
+
+    if (indicators.isEmpty) return result;
+
+    if (indicators.contains('movingAverages')) {
+      final closePrices = candles.map((c) => c.close).toList();
+      final maValues = <int, double>{};
+      for (final period in [20, 50, 200]) {
+        final sma = MovingAverageResult.sma(closePrices, period);
+        final last = sma.lastWhere((s) => s != null, orElse: () => null);
+        if (last != null) maValues[period] = last;
+      }
+      result['movingAverages'] = MovingAverageResult(values: maValues).toMap();
+    }
+
+    if (indicators.contains('rsi')) {
+      result['rsi'] = RSIResult.fromCandles(candles).toMap();
+    }
+
+    if (indicators.contains('macd')) {
+      result['macd'] = MacdResult.fromCandles(candles).toMap();
+    }
+
+    if (indicators.contains('atr')) {
+      result['atr'] = ATRResult.fromCandles(candles).toMap();
+    }
+
+    if (indicators.contains('bollinger')) {
+      result['bollinger'] = BollingerBandsResult.fromCandles(candles).toMap();
+    }
+
+    if (indicators.contains('volume')) {
+      result['volume'] = VolumeAnalysisResult.fromCandles(candles).toMap();
+    }
+
+    if (indicators.contains('trend')) {
+      result['trend'] = TrendResult.fromCandles(candles).toMap();
+    }
+
+    return result;
+  }
+
+  /// 다중 종목 일괄 분석
+  static Future<List<StockAnalysisResult>> analyzeMultiple({
+    required Map<String, List<Candle>> stocksData,
+  }) async {
+    final results = <StockAnalysisResult>[];
+    for (final entry in stocksData.entries) {
+      try {
+        results.add(
+          StockAnalysisResult.fromCandles(
+            symbol: entry.key,
+            candles: entry.value,
+          ),
+        );
+      } catch (e) {
+        // Log error
+      }
+    }
+    return results;
   }
 
   /// 요약 (콘솔 출력용)

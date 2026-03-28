@@ -1,7 +1,6 @@
 import 'package:aristock/shared/models/market/candle.dart';
 import 'package:aristock/shared/models/market/market_tick.dart';
 import 'package:aristock/shared/models/market/market_timeframe.dart';
-import 'package:aristock/shared/services/technical/analyzer/candle_builder.dart';
 import 'package:flutter/foundation.dart';
 import 'kiwoom_market_service.dart';
 
@@ -102,7 +101,7 @@ class KiwoomMarketDataService {
       throw StateError('응답에서 데이터 리스트 필드를 찾을 수 없습니다. (Keys: ${response.body.keys.toList()}, Preview: $preview)');
     }
 
-    final candles = CandleBuilder.fromKiwoomChartResponse(
+    final candles = Candle.fromKiwoomList(
       candles: raw,
       timeframe: timeframe.isDay ? 'D' : timeframe.kiwoomMinuteScope,
       baseDate: DateTime.now(),
