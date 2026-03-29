@@ -4,7 +4,7 @@ import 'analysis_provider.dart';
 
 extension AnalysisProviderDebug on AnalysisProvider {
   // DEBUG 전용 샘플 생성
-  Future<void> loadSampleTimeline(String symbol, String name) async {
+  Future<void> loadSampleIssueTrace(String symbol, String name) async {
     final today = DateTime.now();
     final d1 = today.subtract(const Duration(days: 5)).toString().split(' ')[0];
     final d2 = today.subtract(const Duration(days: 3)).toString().split(' ')[0];

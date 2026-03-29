@@ -20,7 +20,7 @@ class AnalysisDebugTools extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         TextButton.icon(
-          onPressed: () => provider.loadSampleTimeline(symbol, name),
+          onPressed: () => provider.loadSampleIssueTrace(symbol, name),
           icon: const Icon(
             Icons.playlist_add_check_circle_rounded,
             size: 16,

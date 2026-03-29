@@ -43,10 +43,17 @@ class AnalysisProvider with ChangeNotifier {
   Future<void> addAnalysisLog(StockAnalysis newAnalysis) async {
     final existingAnalysis = await _repository.getAnalysis(newAnalysis.symbol);
 
-    // 모델의 mergeWith 메서드를 사용하여 비즈니스 로직 수행
-    final finalAnalysis = existingAnalysis != null
-        ? existingAnalysis.mergeWith(newAnalysis)
-        : newAnalysis;
+    // 기존 데이터가 없더라도 새 데이터 자체의 중복 제거 및 초기화를 위해 mergeWith를 거칩니다.
+    final baseAnalysis = existingAnalysis ??
+        StockAnalysis(
+          symbol: newAnalysis.symbol,
+          stockName: newAnalysis.stockName,
+          date: newAnalysis.date,
+          content: '',
+          issues: [],
+        );
+
+    final finalAnalysis = baseAnalysis.mergeWith(newAnalysis);
 
     await _repository.saveAnalysis(finalAnalysis);
 
@@ -161,6 +168,22 @@ class AnalysisProvider with ChangeNotifier {
         .toList();
 
     final updatedAnalysis = _selectedAnalysis!.copyWith(issues: updatedIssues);
+    await _saveAndRefresh(updatedAnalysis);
+  }
+
+  /// 제목(Title)을 기준으로 이슈 삭제
+  Future<void> deleteIssueByTitle(String symbol, String title) async {
+    final analysis = await _repository.getAnalysis(symbol);
+    if (analysis == null || analysis.issues == null) return;
+
+    final normalizedTitle = title.replaceAll(' ', '').toLowerCase();
+    final updatedIssues = analysis.issues!
+        .where((i) => i.title.replaceAll(' ', '').toLowerCase() != normalizedTitle)
+        .toList();
+
+    if (updatedIssues.length == analysis.issues!.length) return; // 삭제된 게 없음
+
+    final updatedAnalysis = analysis.copyWith(issues: updatedIssues);
     await _saveAndRefresh(updatedAnalysis);
   }
 

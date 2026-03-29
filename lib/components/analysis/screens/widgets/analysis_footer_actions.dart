@@ -30,7 +30,7 @@ class AnalysisFooterActions extends StatelessWidget {
                 color: AppTheme.textMain38,
               ),
               label: const Text(
-                '현재 종목 타임라인 전체 초기화',
+                '현재 종목 이슈 트레이스 전체 초기화',
                 style: TextStyle(color: AppTheme.textMain38, fontSize: 12),
               ),
             ),
@@ -60,7 +60,7 @@ class AnalysisFooterActions extends StatelessWidget {
       WsManager.sendAsync('/APP.REPORT', {
         'appId': 'aristock',
         'event': 'REQUEST_ANALYSIS',
-        'message': '$symbol 종목에 대한 최신 상황을 분석하여 통합 이슈 타임라인을 업데이트해줘.',
+        'message': '$symbol 종목에 대한 최신 상황을 분석하여 통합 이슈 트레이스를 업데이트해줘.',
         'params': {'symbol': symbol},
       });
       ScaffoldMessenger.of(context).showSnackBar(

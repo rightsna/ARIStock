@@ -21,6 +21,29 @@ class KiwoomMarketDataRepository {
     _callHistory.add(DateTime.now());
   }
 
+  /// 종목 코드로 종목명을 정밀하게 조회한다.
+  Future<String> getStockName(String symbol) async {
+    try {
+      _recordCall();
+      final response = await _marketService.getStockInfo(stockCode: symbol);
+      if (response.isSuccess) {
+        final body = response.body;
+        // 키움/KIS 브릿지 응답 구조 대응
+        final name = body['stk_nm'] ?? 
+                     body['stk_name'] ?? 
+                     body['output']?['stk_nm'] ?? 
+                     body['output1']?['hts_kor_isnm'];
+        
+        if (name != null && name.toString().isNotEmpty) {
+          return name.toString().trim();
+        }
+      }
+    } catch (e) {
+      debugPrint('KiwoomMarketDataRepository: Error fetching name for $symbol: $e');
+    }
+    return symbol;
+  }
+
   Future<Map<String, dynamic>> fetchMarketData({
     required String symbol,
     required MarketTimeframe timeframe,

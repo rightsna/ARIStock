@@ -55,7 +55,7 @@ class InvestmentIssue {
 
   factory InvestmentIssue.fromMap(Map<String, dynamic> map) {
     return InvestmentIssue(
-      id: map['id'] ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      id: map['id'] ?? '',
       title: map['title'] ?? '',
       startDate: map['startDate'] ?? DateTime.now().toString().split(' ')[0],
       endDate: map['endDate'],
@@ -142,6 +142,7 @@ class InvestmentIssue {
   }
 
   InvestmentIssue copyWith({
+    String? id,
     String? endDate,
     bool clearEndDate = false,
     String? status,
@@ -153,7 +154,7 @@ class InvestmentIssue {
     bool? isAiModified,
   }) {
     return InvestmentIssue(
-      id: id,
+      id: id ?? this.id,
       title: title,
       startDate: startDate,
       endDate: clearEndDate ? null : (endDate ?? this.endDate),
