@@ -88,16 +88,14 @@ class _AddIssueRequestDialogState extends State<AddIssueRequestDialog> {
 
   void _sendAddRequest() {
     final requestText = _requestController.text.trim();
-    if (requestText.isNotEmpty && WsManager.isConnected) {
-      WsManager.sendAsync('/APP.REPORT', {
-        'appId': 'aristock',
-        'event': 'REQUEST_ANALYSIS',
-        'message': '${widget.symbol} 종목에 대해 다음 요청사항을 반영하여 투자 이슈 매니지먼트 보드를 대대적으로 업데이트해줘:\n\n[사용자 지시사항]: $requestText',
-        'params': {
-          'symbol': widget.symbol,
-          'editRequest': requestText
-        }
-      });
+    if (requestText.isNotEmpty && AriAgent.isConnected) {
+      AriAgent.report(
+        appId: 'aristock',
+        type: 'REQUEST_ANALYSIS',
+        message:
+            '${widget.symbol} 종목에 대해 다음 요청사항을 반영하여 투자 이슈 매니지먼트 보드를 대대적으로 업데이트해줘:\n\n[사용자 지시사항]: $requestText',
+        details: {'symbol': widget.symbol, 'editRequest': requestText},
+      );
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('AI가 요청한 내용으로 "${widget.symbol}" 이슈 리빙 리포트를 재구성합니다...')),

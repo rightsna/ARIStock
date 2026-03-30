@@ -156,17 +156,17 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
       ? '$baseMessage\n\n[사용자 지시사항]: $userRequest'
       : baseMessage;
  
-    if (WsManager.isConnected) {
-      WsManager.sendAsync('/APP.REPORT', {
-        'appId': 'aristock',
-        'event': 'INVESTIGATE_ISSUE',
-        'message': finalMessage,
-        'params': {
+    if (AriAgent.isConnected) {
+      AriAgent.report(
+        appId: 'aristock',
+        type: 'INVESTIGATE_ISSUE',
+        message: finalMessage,
+        details: {
           'symbol': widget.symbol,
           'issueTitle': issue.title,
-          'userRequest': userRequest
-        }
-      });
+          'userRequest': userRequest,
+        },
+      );
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('AI가 "${issue.title}" 이슈에 대한 정밀 리서치를 시작합니다...')),

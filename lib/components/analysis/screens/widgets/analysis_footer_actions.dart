@@ -56,13 +56,13 @@ class AnalysisFooterActions extends StatelessWidget {
   }
 
   static void requestAIUpdate(BuildContext context, String symbol) {
-    if (WsManager.isConnected) {
-      WsManager.sendAsync('/APP.REPORT', {
-        'appId': 'aristock',
-        'event': 'REQUEST_ANALYSIS',
-        'message': '$symbol 종목에 대한 최신 상황을 분석하여 통합 이슈 트레이스를 업데이트해줘.',
-        'params': {'symbol': symbol},
-      });
+    if (AriAgent.isConnected) {
+      AriAgent.report(
+        appId: 'aristock',
+        type: 'REQUEST_ANALYSIS',
+        message: '$symbol 종목에 대한 최신 상황을 분석하여 통합 이슈 트레이스를 업데이트해줘.',
+        details: {'symbol': symbol},
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('AI에게 "$symbol" 리서치 업데이트를 요청했습니다...')),
       );

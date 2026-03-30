@@ -74,8 +74,8 @@ void main(List<String> args) async {
       const String.fromEnvironment('ARI_HOST', defaultValue: '127.0.0.1');
 
   if (port.isNotEmpty) {
-    WsManager.init(host: host, port: int.parse(port));
-    WsManager.connect();
+    AriAgent.init(host: host, port: int.parse(port));
+    AriAgent.connect();
 
     final isHeadless = args.contains('--headless');
 

@@ -50,8 +50,8 @@ class MainLayout extends StatelessWidget {
               const SizedBox(width: 8),
               // 서버 접속 상태 표시 (녹색점) - StreamBuilder로 실시간 감지
               StreamBuilder<bool>(
-                stream: WsManager.connectionStream,
-                initialData: WsManager.isConnected,
+                stream: AriAgent.connectionStream,
+                initialData: AriAgent.isConnected,
                 builder: (context, snapshot) {
                   final isConnected = snapshot.data ?? false;
                   return Container(
