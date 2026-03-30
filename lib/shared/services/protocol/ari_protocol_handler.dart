@@ -59,7 +59,6 @@ class ARIProtocolHandler {
       appId: 'aristock',
       onCommand: _handleEvent,
       onGetState: _getState,
-      onGetCommands: _getCommands,
     );
 
     _protocolHandler.start();
@@ -78,37 +77,6 @@ class ARIProtocolHandler {
       'totalAssets': accountProvider.totalAssets,
       'stockCount': accountProvider.kiwoomStocks.length,
       'selectedAccountNo': accountProvider.selectedAccountNo,
-    };
-  }
-
-  /// 에이전트가 호출 가능한 명령어 목록과 설명을 정의합니다.
-  Map<String, String> _getCommands() {
-    return {
-      // --- 투자 분석 및 기록 (Issue Trace) ---
-      'SET_ANALYSIS':
-          '종목 분석 정보(요약, 점수, 본문) 저장/병합 및 종목 선택 [params: symbol, summary?, content?, shortTermScore?, mediumTermScore?, longTermScore?, issues: List<{title, isPositive, impact, status}>?]',
-      'GET_ANALYSIS':
-          '종목의 분석 요약 및 핵심 점수 조회 [params: symbol, type: "full"|"recent"?]',
-      'GET_ANALYSIS_ISSUES':
-          '종목의 모든 투자 이슈(Issue Trace) 목록 조회 [params: symbol, includeResolved: bool? (default: false)]',
-      'ADD_ANALYSIS_ISSUE':
-          '신규 투자 이슈(재료) 추가. [params: symbol, title, isPositive, impact, status?, history: {content, detail?}]',
-      'REMOVE_ANALYSIS_ISSUE': '특정 투자 이슈 제거 [params: symbol, issueTitle]',
-      'UPDATE_ANALYSIS_ISSUE':
-          '이슈 상태/점수 변경 및 이슈 트레이스 히스토리 추가 [params: symbol, issueTitle, status?, impact?, history: {content, detail?}]',
-
-      // --- 계정 및 시장 데이터 ---
-      'GET_ACCOUNT_INFO':
-          '연동된 계좌의 자산 총액 및 실보유 종목(평균가, 수량, 수익률 포함) 리스트 조회 [no params]',
-      'GET_MARKET_DATA':
-          '차트 데이터 및 실시간 호가 조회 [params: symbol, timeframe: "tick"|"1m"|"5m"|"15m"|"1d", limit: 데이터개수]',
-      'CALCULATE_INDICATOR':
-          '종목의 특정 기술적 지표 계산 [params: symbol, type: "rsi"|"macd"|"ma"|"bollinger"|"atr"|"vwap"|"trend", timeframe?, params?]',
-
-      // --- 관심 종목 및 탐색 ---
-      'GET_WATCHLIST':
-          '현재 사용자의 관심 종목(Watchlist) 리스트 및 현재 선택된 종목 확인 [no params]',
-      'GET_APP_STATUS': '앱의 현재 실행 상태(Headless 여부 등) 조회 [no params]',
     };
   }
 
@@ -233,13 +201,18 @@ class ARIProtocolHandler {
       case 'GET_ANALYSIS_ISSUES':
         final includeResolved = data['includeResolved'] as bool? ?? false;
         final analysis = analysisProvider.getAnalysisForSymbol(symbol);
-        
+
         var issues = analysis?.issues?.toList() ?? [];
         if (!includeResolved) {
           // 종료되거나 해결된 이슈 제외
-          issues = issues.where((i) => 
-            i.status != 'resolved' && i.status != 'closed' && i.endDate == null
-          ).toList();
+          issues = issues
+              .where(
+                (i) =>
+                    i.status != 'resolved' &&
+                    i.status != 'closed' &&
+                    i.endDate == null,
+              )
+              .toList();
         }
 
         return {
