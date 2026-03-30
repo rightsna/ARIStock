@@ -1,4 +1,4 @@
-import 'package:aristock/shared/infra/kiwoom/api_client.dart';
+import 'package:aristock/shared/infra/kiwoom_api_client.dart';
 
 /// 계좌/잔고 관련 조회 전용 서비스
 class KiwoomAccountRepository {

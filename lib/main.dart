@@ -12,7 +12,7 @@ import 'components/analysis/models/stock_analysis_model.dart';
 import 'components/analysis/models/investment_issue_model.dart';
 import 'components/account/providers/account_provider.dart';
 
-import 'package:aristock/shared/infra/kiwoom/api_client.dart';
+import 'package:aristock/shared/infra/kiwoom_api_client.dart';
 import 'package:aristock/shared/repository/kiwoom/account_repository.dart';
 import 'package:aristock/shared/repository/kiwoom/market_repository.dart';
 import 'components/watchlist/providers/watchlist_provider.dart';

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:aristock/shared/models/kiwoom/credentials_model.dart';
 import 'package:aristock/shared/models/stock/stock.dart';
-import 'package:aristock/shared/infra/kiwoom/api_client.dart';
+import 'package:aristock/shared/infra/kiwoom_api_client.dart';
 import 'package:aristock/shared/repository/kiwoom/account_repository.dart';
 import 'package:aristock/shared/repository/kiwoom/market_repository.dart';
 import 'package:aristock/shared/repository/kiwoom/trading_repository.dart';
