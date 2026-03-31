@@ -6,6 +6,8 @@ import 'package:aristock/components/analysis/models/investment_issue_model.dart'
 import 'package:aristock/components/analysis/providers/analysis_provider.dart';
 import 'package:aristock/components/account/providers/account_provider.dart';
 import 'package:aristock/components/watchlist/providers/watchlist_provider.dart';
+import 'package:aristock/components/strategy/models/trading_strategy_model.dart';
+import 'package:aristock/components/strategy/providers/trading_strategy_provider.dart';
 
 import 'package:aristock/shared/repository/kiwoom/market_data_repository.dart';
 import 'package:aristock/shared/models/market/market_timeframe.dart';
@@ -20,6 +22,7 @@ class ARIProtocolHandler {
   final AnalysisProvider analysisProvider;
   final AccountProvider accountProvider;
   final WatchlistProvider watchlistProvider;
+  final TradingStrategyProvider tradingStrategyProvider;
   final KiwoomMarketDataRepository marketDataService;
   final TechnicalTools technicalTools;
   final bool isHeadless;
@@ -28,6 +31,7 @@ class ARIProtocolHandler {
     required this.analysisProvider,
     required this.accountProvider,
     required this.watchlistProvider,
+    required this.tradingStrategyProvider,
     required this.marketDataService,
     required this.isHeadless,
   }) : technicalTools = TechnicalTools(marketDataService);
@@ -37,6 +41,7 @@ class ARIProtocolHandler {
     required AnalysisProvider analysisProvider,
     required AccountProvider accountProvider,
     required WatchlistProvider watchlistProvider,
+    required TradingStrategyProvider tradingStrategyProvider,
     required KiwoomMarketDataRepository marketDataService,
     required bool isHeadless,
   }) {
@@ -44,6 +49,7 @@ class ARIProtocolHandler {
       analysisProvider: analysisProvider,
       accountProvider: accountProvider,
       watchlistProvider: watchlistProvider,
+      tradingStrategyProvider: tradingStrategyProvider,
       marketDataService: marketDataService,
       isHeadless: isHeadless,
     );
@@ -108,7 +114,12 @@ class ARIProtocolHandler {
         return await _handleMarketEvent(event, data);
       }
 
-      // 5. 시스템 상태 관련
+      // 5. 매매전략 관련
+      if (event == 'SET_STRATEGY' || event == 'GET_STRATEGY') {
+        return await _handleStrategyEvent(event, data);
+      }
+
+      // 6. 시스템 상태 관련
       if (event == 'GET_APP_STATUS') {
         return {
           'status': 'success',
@@ -409,6 +420,35 @@ class ARIProtocolHandler {
 
       default:
         throw Exception('Unsupported market event: $event');
+    }
+  }
+
+  /// [Strategy] 매매전략 저장 및 조회를 처리합니다.
+  Future<Map<String, dynamic>> _handleStrategyEvent(
+    String event,
+    Map<String, dynamic> data,
+  ) async {
+    final symbol = data['symbol'] as String?;
+    if (symbol == null) throw Exception('Symbol is required for strategy events');
+
+    switch (event) {
+      case 'SET_STRATEGY':
+        final content = data['content'] as String;
+        final strategy = TradingStrategy(
+          symbol: symbol,
+          content: content,
+          updatedAt: DateTime.now().toString().split(' ')[0],
+        );
+        await tradingStrategyProvider.saveStrategy(strategy);
+        LogProvider.info('STRATEGY', 'Strategy SET for $symbol');
+        return {'status': 'success'};
+
+      case 'GET_STRATEGY':
+        final strategy = tradingStrategyProvider.getStrategyForSymbol(symbol);
+        return {'status': 'success', 'data': strategy?.toMap()};
+
+      default:
+        throw Exception('Unsupported strategy event: $event');
     }
   }
 

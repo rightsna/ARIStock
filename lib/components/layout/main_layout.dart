@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../analysis/screens/analysis_screen.dart';
 import '../account/screens/account_screen.dart';
+import '../strategy/screens/trading_strategy_screen.dart';
 import '../watchlist/screens/watchlist_screen.dart';
 import 'package:provider/provider.dart';
 import '../watchlist/providers/watchlist_provider.dart';
@@ -15,7 +16,7 @@ class MainLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         key: GlobalKey<ScaffoldState>(), // Drawer 제어용
         endDrawer: const Drawer(
@@ -123,6 +124,7 @@ class MainLayout extends StatelessWidget {
           bottom: TabBar(
             tabs: const [
               Tab(text: '종목분석'),
+              Tab(text: '매매전략'),
               Tab(text: '계좌'),
             ],
             indicatorColor: AppTheme.primaryBlue,
@@ -150,7 +152,7 @@ class MainLayout extends StatelessWidget {
             ),
           ),
           child: const TabBarView(
-            children: [AnalysisScreen(), AccountScreen()],
+            children: [AnalysisScreen(), TradingStrategyScreen(), AccountScreen()],
           ),
         ),
       ),
