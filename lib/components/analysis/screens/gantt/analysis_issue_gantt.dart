@@ -6,7 +6,6 @@ import '../../../../shared/theme.dart';
 import 'widgets/gantt_empty_placeholder.dart';
 import 'widgets/gantt_chart_container.dart';
 import '../issue/issue_detail_sheet.dart';
-import '../issue/add_issue_request_dialog.dart';
 
 class AnalysisIssueGantt extends StatefulWidget {
   final String symbol;
@@ -111,14 +110,6 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
     );
   }
 
-  void _showAddRequest() {
-    // 기본 동작: 이슈 추가 요청 다이얼로그 표시
-    showDialog(
-      context: context,
-      builder: (ctx) => AddIssueRequestDialog(symbol: widget.symbol),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     List<InvestmentIssue> visibleIssues = _hideResolved
@@ -188,17 +179,6 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
                 ),
                 const SizedBox(width: 12),
               ],
-              IconButton(
-                onPressed: _showAddRequest,
-                icon: const Icon(
-                  Icons.add_circle_outline,
-                  size: 20,
-                  color: AppTheme.primaryBlue,
-                ),
-                tooltip: '이슈 추가 또는 편집 요청',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
             ],
           ),
         ),
@@ -213,7 +193,7 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
             onIssueTap: _showDetails,
           )
         else
-          GanttEmptyPlaceholder(onAddRequest: _showAddRequest),
+          const GanttEmptyPlaceholder(),
       ],
     );
   }
