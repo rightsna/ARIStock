@@ -4,6 +4,10 @@ import 'package:ari_plugin/ari_plugin.dart';
 import '../../shared/theme.dart';
 import 'chat_provider.dart';
 
+import 'widgets/chat_empty_state.dart';
+import 'widgets/chat_input_area.dart';
+import 'widgets/chat_message_item.dart';
+
 class ChatPanel extends StatefulWidget {
   final List<String> tabLabels;
   final TabController tabController;
@@ -70,7 +74,7 @@ class _ChatPanelState extends State<ChatPanel> {
     _controller.clear();
     _scrollToBottom();
 
-    // 에이전트에게 전송 (이제 requestId를 지원합니다)
+    // 에이전트에게 전송 (AI 분석 요청)
     AriAgent.report(
       appId: 'aristock',
       type: 'CHAT_MESSAGE',
@@ -169,180 +173,22 @@ class _ChatPanelState extends State<ChatPanel> {
             child: Container(
               color: AppTheme.backgroundLight.withOpacity(0.3),
               child: chatProvider.messages.isEmpty
-                  ? _buildEmptyState()
+                  ? const ChatEmptyState()
                   : ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(20),
                       itemCount: chatProvider.messages.length,
                       itemBuilder: (context, index) {
-                        return _buildMessageItem(chatProvider.messages[index]);
+                        return ChatMessageItem(
+                          message: chatProvider.messages[index],
+                        );
                       },
                     ),
             ),
           ),
 
           // Input Section
-          _buildInputArea(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryBlue.withOpacity(0.05),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.forum_outlined,
-              size: 32,
-              color: AppTheme.primaryBlue.withOpacity(0.3),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            '무엇을 함께 분석해 볼까요?',
-            style: TextStyle(
-              color: AppTheme.textMain,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageItem(ChatMessage message) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: message.isUser
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        children: [
-          if (!message.isUser) ...[
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              width: 28,
-              height: 28,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primaryBlue, Color(0xFF64B5F6)],
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.smart_toy_rounded,
-                size: 16,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 10),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: message.isUser
-                    ? AppTheme.primaryBlue
-                    : AppTheme.surfaceWhite,
-                borderRadius: BorderRadius.circular(16).copyWith(
-                  bottomLeft: Radius.circular(message.isUser ? 16 : 4),
-                  bottomRight: Radius.circular(message.isUser ? 4 : 16),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Text(
-                message.text,
-                style: TextStyle(
-                  color: message.isUser ? Colors.white : AppTheme.textMain,
-                  height: 1.4,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInputArea() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        16 + MediaQuery.of(context).padding.bottom,
-      ),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceWhite,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppTheme.backgroundLight,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.textMain10),
-              ),
-              child: TextField(
-                controller: _controller,
-                style: const TextStyle(color: AppTheme.textMain, fontSize: 13),
-                decoration: const InputDecoration(
-                  hintText: '분석 요청...',
-                  hintStyle: TextStyle(
-                    color: AppTheme.textMain38,
-                    fontSize: 13,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 12),
-                ),
-                onSubmitted: (_) => _sendMessage(),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryBlue,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              onPressed: _sendMessage,
-              icon: const Icon(
-                Icons.send_rounded,
-                size: 20,
-                color: Colors.white,
-              ),
-            ),
-          ),
+          ChatInputArea(controller: _controller, onSend: _sendMessage),
         ],
       ),
     );

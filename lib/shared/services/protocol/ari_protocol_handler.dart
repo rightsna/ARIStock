@@ -437,14 +437,9 @@ class ARIProtocolHandler {
 
     switch (event) {
       case 'SET_STRATEGY':
-        final content = data['content'] as String;
-        final strategy = TradingStrategy(
-          symbol: symbol,
-          content: content,
-          updatedAt: DateTime.now().toString().split(' ')[0],
-        );
+        final strategy = TradingStrategy.fromMap(data);
         await tradingStrategyProvider.saveStrategy(strategy);
-        LogProvider.info('STRATEGY', 'Strategy SET for $symbol');
+        LogProvider.info('STRATEGY', 'Strategy SET (structured) for ${strategy.symbol}');
         return {'status': 'success'};
 
       case 'GET_STRATEGY':

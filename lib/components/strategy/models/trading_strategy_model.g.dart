@@ -20,19 +20,25 @@ class TradingStrategyAdapter extends TypeAdapter<TradingStrategy> {
       symbol: fields[0] as String,
       content: fields[1] as String,
       updatedAt: fields[2] as String,
+      entryPrices: (fields[3] as List?)?.cast<double>(),
+      targetPrices: (fields[4] as List?)?.cast<double>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, TradingStrategy obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.symbol)
       ..writeByte(1)
       ..write(obj.content)
       ..writeByte(2)
-      ..write(obj.updatedAt);
+      ..write(obj.updatedAt)
+      ..writeByte(3)
+      ..write(obj.entryPrices)
+      ..writeByte(4)
+      ..write(obj.targetPrices);
   }
 
   @override

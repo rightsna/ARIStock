@@ -6,6 +6,7 @@ import 'package:ari_plugin/ari_plugin.dart';
 class ChatMessage {
   final String text;
   final bool isUser;
+  final bool isSystem; // 프로그래스(툴 실행 등) 메시지 여부
   final DateTime createdAt;
   final String? requestId;
 
@@ -13,6 +14,7 @@ class ChatMessage {
     required this.text,
     required this.isUser,
     required this.createdAt,
+    this.isSystem = false,
     this.requestId,
   });
 }
@@ -21,6 +23,7 @@ class ChatProvider extends ChangeNotifier {
   final List<ChatMessage> _messages = [];
   StreamSubscription? _agentPushSub;
   StreamSubscription? _agentRequestSub;
+  StreamSubscription? _progressSub;
 
   ChatProvider() {
     _initListeners();
@@ -51,8 +54,14 @@ class ChatProvider extends ChangeNotifier {
       final requestId = payload['requestId']?.toString() ?? '';
       
       if (response.isEmpty) return;
-      // 💡 수정: AI 답변 중복 체크 (requestId + isUser: false)
-      if (requestId.isNotEmpty && _messages.any((m) => !m.isUser && m.requestId == requestId)) return;
+      
+      // 답변이 오면 프로그래스 메시지 제거
+      if (requestId.isNotEmpty) {
+        _removeProgressMessage(requestId);
+      }
+
+      // AI 답변 중복 체크
+      if (requestId.isNotEmpty && _messages.any((m) => !m.isUser && !m.isSystem && m.requestId == requestId)) return;
 
       _messages.add(ChatMessage(
         text: response, 
@@ -62,9 +71,44 @@ class ChatProvider extends ChangeNotifier {
       ));
       notifyListeners();
     });
+
+    // 3. 프로그래스(툴 실행 등) 수신
+    _progressSub = AriAgent.on('/AGENT.PROGRESS', (data) {
+      final payload = data['data'] is Map ? data['data'] as Map : data;
+      final progressMessage = payload['message']?.toString() ?? '';
+      final requestId = payload['requestId']?.toString() ?? '';
+
+      if (progressMessage.isEmpty) return;
+
+      _upsertProgressMessage(progressMessage, requestId);
+      notifyListeners();
+    });
   }
 
   List<ChatMessage> get messages => List.unmodifiable(_messages);
+
+  void _upsertProgressMessage(String text, String requestId) {
+    final idx = _messages.lastIndexWhere(
+      (m) => m.isSystem && m.requestId == requestId,
+    );
+    final msg = ChatMessage(
+      text: text,
+      isUser: false,
+      isSystem: true,
+      requestId: requestId,
+      createdAt: DateTime.now(),
+    );
+
+    if (idx >= 0) {
+      _messages[idx] = msg;
+    } else {
+      _messages.add(msg);
+    }
+  }
+
+  void _removeProgressMessage(String requestId) {
+    _messages.removeWhere((m) => m.isSystem && m.requestId == requestId);
+  }
 
   void addAiMessage(String text, {String? requestId}) {
     if (requestId != null && _messages.any((m) => !m.isUser && m.requestId == requestId)) return;
@@ -87,6 +131,7 @@ class ChatProvider extends ChangeNotifier {
   void dispose() {
     _agentPushSub?.cancel();
     _agentRequestSub?.cancel();
+    _progressSub?.cancel();
     super.dispose();
   }
 }

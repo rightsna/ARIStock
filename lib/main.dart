@@ -19,6 +19,7 @@ import 'components/watchlist/providers/watchlist_provider.dart';
 import 'components/watchlist/models/watchlist_model.dart';
 import 'components/strategy/models/trading_strategy_model.dart';
 import 'components/strategy/providers/trading_strategy_provider.dart';
+import 'components/strategy/providers/stock_chart_provider.dart';
 import 'components/chat/chat_provider.dart';
 import 'package:ari_plugin/ari_plugin.dart';
 
@@ -115,6 +116,7 @@ void main(List<String> args) async {
         ChangeNotifierProvider.value(value: watchlistProvider),
         ChangeNotifierProvider.value(value: tradingStrategyProvider),
         ChangeNotifierProvider.value(value: chatProvider),
+        ChangeNotifierProvider(create: (_) => StockChartProvider(marketDataService)),
       ],
       child: const ARIStockApp(),
     ),
