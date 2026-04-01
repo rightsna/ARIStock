@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import 'package:ari_plugin/ari_plugin.dart';
 import '../providers/trading_strategy_provider.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
 import 'widgets/stock_daily_chart.dart';
@@ -137,6 +138,33 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
               style: const TextStyle(fontSize: 13, color: AppTheme.textMain38),
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: () {
+                AriAgent.report(
+                  appId: 'aristock',
+                  type: 'CHAT_MESSAGE',
+                  message: '$stockName($symbol)에 대한 매매전략을 수립해줘. (매수가, 손절가, 목표가 포함)',
+                );
+              },
+              icon: const Icon(Icons.auto_awesome, size: 14),
+              label: const Text(
+                'AI 매매전략 수립 요청',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                foregroundColor: AppTheme.primaryBlue,
+                side: const BorderSide(color: AppTheme.primaryBlue, width: 1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -196,7 +224,65 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 48),
+          Center(
+            child: TextButton.icon(
+              onPressed: () => _showResetConfirm(context),
+              icon: const Icon(
+                Icons.delete_outline,
+                size: 16,
+                color: AppTheme.textMain38,
+              ),
+              label: const Text(
+                '현재 종목 매매전략 초기화',
+                style: TextStyle(color: AppTheme.textMain38, fontSize: 12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  void _showResetConfirm(BuildContext context) {
+    final strategyProvider = context.read<TradingStrategyProvider>();
+    final symbol = context.read<WatchlistProvider>().selectedSymbol;
+    if (symbol == null) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceWhite,
+        title: const Text(
+          '데이터 초기화',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          '해당 종목의 매매전략 데이터가 삭제됩니다. 계속하시겠습니까?',
+          style: TextStyle(fontSize: 14, color: AppTheme.textMain),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              '취소',
+              style: TextStyle(color: AppTheme.textMain38),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              strategyProvider.deleteStrategy(symbol);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('"$symbol" 매매전략이 초기화되었습니다.')),
+              );
+            },
+            child: const Text(
+              '초기화',
+              style: TextStyle(color: AppTheme.accentRed),
+            ),
+          ),
         ],
       ),
     );

@@ -1,47 +1,50 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'trading_strategy_model.dart';
+part of 'trading_record_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class TradingStrategyAdapter extends TypeAdapter<TradingStrategy> {
+class TradingRecordAdapter extends TypeAdapter<TradingRecord> {
   @override
-  final int typeId = 8;
+  final int typeId = 9;
 
   @override
-  TradingStrategy read(BinaryReader reader) {
+  TradingRecord read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return TradingStrategy(
+    return TradingRecord(
       symbol: fields[0] as String,
-      content: fields[1] as String,
-      updatedAt: fields[2] as String,
-      entryPrices: (fields[3] as List?)?.cast<double>(),
-      targetPrices: (fields[4] as List?)?.cast<double>(),
-      stopLoss: fields[5] as double?,
+      date: fields[1] as String,
+      price: fields[2] as double,
+      side: fields[3] as String,
+      quantity: fields[4] as double,
+      reason: fields[5] as String,
+      createdAt: fields[6] as String?,
     );
   }
 
   @override
-  void write(BinaryWriter writer, TradingStrategy obj) {
+  void write(BinaryWriter writer, TradingRecord obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.symbol)
       ..writeByte(1)
-      ..write(obj.content)
+      ..write(obj.date)
       ..writeByte(2)
-      ..write(obj.updatedAt)
+      ..write(obj.price)
       ..writeByte(3)
-      ..write(obj.entryPrices)
+      ..write(obj.side)
       ..writeByte(4)
-      ..write(obj.targetPrices)
+      ..write(obj.quantity)
       ..writeByte(5)
-      ..write(obj.stopLoss);
+      ..write(obj.reason)
+      ..writeByte(6)
+      ..write(obj.createdAt);
   }
 
   @override
@@ -50,7 +53,7 @@ class TradingStrategyAdapter extends TypeAdapter<TradingStrategy> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TradingStrategyAdapter &&
+      other is TradingRecordAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

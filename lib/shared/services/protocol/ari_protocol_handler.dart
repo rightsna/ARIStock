@@ -8,6 +8,8 @@ import 'package:aristock/components/account/providers/account_provider.dart';
 import 'package:aristock/components/watchlist/providers/watchlist_provider.dart';
 import 'package:aristock/components/strategy/models/trading_strategy_model.dart';
 import 'package:aristock/components/strategy/providers/trading_strategy_provider.dart';
+import 'package:aristock/components/trading/models/trading_record_model.dart';
+import 'package:aristock/components/trading/providers/trading_record_provider.dart';
 
 import 'package:aristock/shared/repository/kiwoom/market_data_repository.dart';
 import 'package:aristock/shared/models/market/market_timeframe.dart';
@@ -24,6 +26,7 @@ class ARIProtocolHandler {
   final AccountProvider accountProvider;
   final WatchlistProvider watchlistProvider;
   final TradingStrategyProvider tradingStrategyProvider;
+  final TradingRecordProvider tradingRecordProvider;
   final ChatProvider chatProvider;
   final KiwoomMarketDataRepository marketDataService;
   final TechnicalTools technicalTools;
@@ -34,6 +37,7 @@ class ARIProtocolHandler {
     required this.accountProvider,
     required this.watchlistProvider,
     required this.tradingStrategyProvider,
+    required this.tradingRecordProvider,
     required this.chatProvider,
     required this.marketDataService,
     required this.isHeadless,
@@ -44,6 +48,7 @@ class ARIProtocolHandler {
     required AccountProvider accountProvider,
     required WatchlistProvider watchlistProvider,
     required TradingStrategyProvider tradingStrategyProvider,
+    required TradingRecordProvider tradingRecordProvider,
     required ChatProvider chatProvider,
     required KiwoomMarketDataRepository marketDataService,
     required bool isHeadless,
@@ -53,6 +58,7 @@ class ARIProtocolHandler {
       accountProvider: accountProvider,
       watchlistProvider: watchlistProvider,
       tradingStrategyProvider: tradingStrategyProvider,
+      tradingRecordProvider: tradingRecordProvider,
       chatProvider: chatProvider,
       marketDataService: marketDataService,
       isHeadless: isHeadless,
@@ -123,7 +129,12 @@ class ARIProtocolHandler {
         return await _handleStrategyEvent(event, data);
       }
 
-      // 6. 시스템 상태 관련
+      // 6. 실거래 주문 및 매매기록 관련
+      if (event == 'BUY_STOCK' || event == 'SELL_STOCK' || event == 'ADD_TRADING_RECORD') {
+        return await _handleTradingEvent(event, data);
+      }
+
+      // 7. 시스템 상태 관련
       if (event == 'GET_APP_STATUS') {
         return {
           'status': 'success',
@@ -448,6 +459,49 @@ class ARIProtocolHandler {
 
       default:
         throw Exception('Unsupported strategy event: $event');
+    }
+  }
+
+  /// [Trading] 실제 매수/매도 주문을 실행합니다.
+  Future<Map<String, dynamic>> _handleTradingEvent(
+    String event,
+    Map<String, dynamic> data,
+  ) async {
+    final symbol = data['symbol'] as String?;
+    final qty = data['quantity']?.toString() ?? '1';
+    final price = data['price']?.toString() ?? '';
+
+    if (symbol == null) throw Exception('Symbol is required for trading');
+    if (!accountProvider.hasApiKeys) throw Exception('API 연동이 필요합니다.');
+
+    switch (event) {
+      case 'BUY_STOCK':
+        LogProvider.info('TRADING', 'Executing BUY for $symbol: $qty shares at $price');
+        final response = await accountProvider.tradingService.buyStock(
+          stockCode: symbol,
+          quantity: qty,
+          price: price,
+        );
+        return {'status': response.isSuccess ? 'success' : 'error', 'data': response.body};
+
+      case 'SELL_STOCK':
+        LogProvider.info('TRADING', 'Executing SELL for $symbol: $qty shares at $price');
+        final response = await accountProvider.tradingService.sellStock(
+          stockCode: symbol,
+          quantity: qty,
+          price: price,
+        );
+        return {'status': response.isSuccess ? 'success' : 'error', 'data': response.body};
+
+      case 'ADD_TRADING_RECORD':
+        final record = TradingRecord.fromMap(data);
+        await tradingRecordProvider.init(); // 보장용
+        await tradingRecordProvider.addRecord(record);
+        LogProvider.info('TRADING', 'Trade record ADDED for ${record.symbol}: ${record.side} at ${record.price}');
+        return {'status': 'success'};
+
+      default:
+        throw Exception('Unsupported trading event: $event');
     }
   }
 

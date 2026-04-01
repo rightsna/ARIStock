@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../watchlist/providers/watchlist_provider.dart';
 import '../../../shared/theme.dart';
 import 'package:ari_plugin/ari_plugin.dart';
+import '../trading/screens/trading_history_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -27,13 +28,13 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   static const _chatOpenKey = 'isChatOpen';
   static const _minChatWidth = 240.0;
   static const _maxChatWidthRatio = 0.6;
-  static const _tabLabels = ['종목분석', '매매전략', '계좌'];
+  static const _tabLabels = ['종목분석', '매매전략', '매매기록', '계좌'];
 
   @override
   void initState() {
     super.initState();
     _isChatOpen = Hive.box(_settingsBox).get(_chatOpenKey, defaultValue: true) as bool;
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -147,7 +148,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 bottom: TabBar(
                   controller: _tabController,
-                  tabs: const [Tab(text: '종목분석'), Tab(text: '매매전략'), Tab(text: '계좌')],
+                  tabs: const [Tab(text: '종목분석'), Tab(text: '매매전략'), Tab(text: '매매기록'), Tab(text: '계좌')],
                   indicatorColor: AppTheme.primaryBlue,
                   indicatorWeight: 3,
                   indicatorSize: TabBarIndicatorSize.label,
@@ -171,7 +172,12 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                 ),
                 child: TabBarView(
                   controller: _tabController,
-                  children: const [AnalysisScreen(), TradingStrategyScreen(), AccountScreen()],
+                  children: const [
+                    AnalysisScreen(),
+                    TradingStrategyScreen(),
+                    TradingHistoryScreen(),
+                    AccountScreen()
+                  ],
                 ),
               ),
             ),
