@@ -19,6 +19,7 @@ import 'components/watchlist/providers/watchlist_provider.dart';
 import 'components/watchlist/models/watchlist_model.dart';
 import 'components/strategy/models/trading_strategy_model.dart';
 import 'components/strategy/providers/trading_strategy_provider.dart';
+import 'components/chat/chat_provider.dart';
 import 'package:ari_plugin/ari_plugin.dart';
 
 import 'shared/services/protocol/ari_protocol_handler.dart';
@@ -40,6 +41,8 @@ void main(List<String> args) async {
 
   // Provider 인스턴스 생성 및 초기화 대기
 
+  await Hive.openBox('settings');
+
   final analysisProvider = AnalysisProvider();
   await analysisProvider.init();
 
@@ -60,6 +63,7 @@ void main(List<String> args) async {
   await watchlistProvider.init(accountProvider);
 
   final tradingStrategyProvider = TradingStrategyProvider();
+  final chatProvider = ChatProvider();
 
   final marketDataService = KiwoomMarketDataRepository(kiwoomMarket);
 
@@ -89,6 +93,7 @@ void main(List<String> args) async {
       accountProvider: accountProvider,
       watchlistProvider: watchlistProvider,
       tradingStrategyProvider: tradingStrategyProvider,
+      chatProvider: chatProvider,
       marketDataService: marketDataService,
       isHeadless: isHeadless,
     );
@@ -109,6 +114,7 @@ void main(List<String> args) async {
         ChangeNotifierProvider.value(value: accountProvider),
         ChangeNotifierProvider.value(value: watchlistProvider),
         ChangeNotifierProvider.value(value: tradingStrategyProvider),
+        ChangeNotifierProvider.value(value: chatProvider),
       ],
       child: const ARIStockApp(),
     ),

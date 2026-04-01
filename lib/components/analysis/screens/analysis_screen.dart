@@ -102,7 +102,11 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AnalysisReportHeader(stockName: stock.name, date: analysis.date),
+        AnalysisReportHeader(
+          stockName: stock.name,
+          date: analysis.date,
+          onRequestUpdate: () => AnalysisFooterActions.requestAIUpdate(context, stock.symbol),
+        ),
         const SizedBox(height: 32),
         TrendSummaryCard(
           shortTerm: analysis.shortTermScore,

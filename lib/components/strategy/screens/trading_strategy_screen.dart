@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:ari_plugin/ari_plugin.dart';
 
 import '../providers/trading_strategy_provider.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
@@ -16,13 +15,6 @@ class TradingStrategyScreen extends StatefulWidget {
 
 class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
   String? _lastSyncedSymbol;
-  final TextEditingController _requestController = TextEditingController();
-
-  @override
-  void dispose() {
-    _requestController.dispose();
-    super.dispose();
-  }
 
   @override
   void didChangeDependencies() {
@@ -38,32 +30,6 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
     }
   }
 
-  void _requestStrategy(String symbol, String stockName) {
-    if (!AriAgent.isConnected) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('AI 에이전트가 연결되어 있지 않습니다.')),
-      );
-      return;
-    }
-    final userNote = _requestController.text.trim();
-    final message = userNote.isNotEmpty
-        ? '$symbol ($stockName) 종목에 대한 매매전략을 수립해줘. 추가 요청사항: $userNote'
-        : '$symbol ($stockName) 종목에 대한 매매전략을 수립해줘.';
-    AriAgent.report(
-      appId: 'aristock',
-      type: 'REQUEST_STRATEGY',
-      message: message,
-      details: {
-        'symbol': symbol,
-        'stockName': stockName,
-        if (userNote.isNotEmpty) 'userNote': userNote,
-      },
-    );
-    _requestController.clear();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('AI가 $stockName 매매전략을 수립합니다...')),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +61,6 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
                 ? _buildEmpty(selectedStock.symbol, selectedStock.name)
                 : _buildContent(strategy.content, strategy.updatedAt),
           ),
-          _buildRequestButton(selectedStock.symbol, selectedStock.name),
         ],
       ),
     );
@@ -162,60 +127,4 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
     );
   }
 
-  Widget _buildRequestButton(String symbol, String stockName) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppTheme.textMain10, width: 1)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _requestController,
-            maxLines: 2,
-            minLines: 1,
-            decoration: InputDecoration(
-              hintText: '추가 요청사항을 입력하세요 (선택)',
-              hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textMain38),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: AppTheme.textMain10),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: AppTheme.textMain10),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppTheme.primaryBlue),
-              ),
-              filled: true,
-              fillColor: const Color(0xFFF8F9FA),
-            ),
-            style: const TextStyle(fontSize: 13, color: AppTheme.textMain),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _requestStrategy(symbol, stockName),
-              icon: const Icon(Icons.auto_awesome, size: 16),
-              label: const Text('AI에게 매매전략 재요청'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -4,11 +4,13 @@ import '../../../../../shared/theme.dart';
 class AnalysisReportHeader extends StatelessWidget {
   final String stockName;
   final String date;
+  final VoidCallback? onRequestUpdate;
 
   const AnalysisReportHeader({
     super.key,
     required this.stockName,
     required this.date,
+    this.onRequestUpdate,
   });
 
   @override
@@ -44,16 +46,16 @@ class AnalysisReportHeader extends StatelessWidget {
             ),
           ],
         ),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Icon(
-            Icons.analytics_outlined,
-            color: AppTheme.primaryBlue,
-            size: 28,
+        ElevatedButton.icon(
+          onPressed: onRequestUpdate,
+          icon: const Icon(Icons.auto_awesome, size: 14),
+          label: const Text('리서치 업데이트', style: TextStyle(fontSize: 12)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primaryBlue,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            elevation: 0,
           ),
         ),
       ],

@@ -17,40 +17,15 @@ class AnalysisFooterActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 40),
-      child: Column(
-        children: [
-          Center(child: _buildRequestAnalysisButton(context, symbol)),
-          const SizedBox(height: 32),
-          Center(
-            child: TextButton.icon(
-              onPressed: () => _showResetConfirm(context, provider),
-              icon: const Icon(
-                Icons.delete_outline,
-                size: 16,
-                color: AppTheme.textMain38,
-              ),
-              label: const Text(
-                '현재 종목 이슈 트레이스 전체 초기화',
-                style: TextStyle(color: AppTheme.textMain38, fontSize: 12),
-              ),
-            ),
+      child: Center(
+        child: TextButton.icon(
+          onPressed: () => _showResetConfirm(context, provider),
+          icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.textMain38),
+          label: const Text(
+            '현재 종목 이슈 트레이스 전체 초기화',
+            style: TextStyle(color: AppTheme.textMain38, fontSize: 12),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRequestAnalysisButton(BuildContext context, String symbol) {
-    return ElevatedButton.icon(
-      onPressed: () => requestAIUpdate(context, symbol),
-      icon: const Icon(Icons.auto_awesome, size: 14),
-      label: const Text('AI 리서치 업데이트', style: TextStyle(fontSize: 11)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.primaryBlue,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 0,
+        ),
       ),
     );
   }

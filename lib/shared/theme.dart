@@ -47,7 +47,7 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: surfaceWhite,
       elevation: 0.5,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
+      shadowColor: Colors.black.withOpacity(0.1), // withValues에서 변경 (호환성)
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -77,6 +77,5 @@ class AppTheme {
     ),
   );
 
-  // 기존 darkTheme은 유지는 하되, 기본을 lightTheme으로 전환하기 위해 이름을 바꿈
-  static final ThemeData darkTheme = lightTheme; // 일단 라이트 테마를 기본으로 사용하도록 설정
+  static final ThemeData darkTheme = lightTheme; 
 }
