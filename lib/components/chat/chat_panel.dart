@@ -27,20 +27,22 @@ class _ChatPanelState extends State<ChatPanel> {
   final ScrollController _scrollController = ScrollController();
   int _currentTab = 0;
   int _lastMessageCount = 0;
+  late final ChatProvider _chatProvider;
 
   @override
   void initState() {
     super.initState();
     _currentTab = widget.tabController.index;
     widget.tabController.addListener(_onTabChanged);
-    _lastMessageCount = context.read<ChatProvider>().messages.length;
-    context.read<ChatProvider>().addListener(_onMessagesChanged);
+    _chatProvider = context.read<ChatProvider>();
+    _lastMessageCount = _chatProvider.messages.length;
+    _chatProvider.addListener(_onMessagesChanged);
   }
 
   @override
   void dispose() {
     widget.tabController.removeListener(_onTabChanged);
-    context.read<ChatProvider>().removeListener(_onMessagesChanged);
+    _chatProvider.removeListener(_onMessagesChanged);
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -53,7 +55,7 @@ class _ChatPanelState extends State<ChatPanel> {
 
   void _onMessagesChanged() {
     if (!mounted) return;
-    final messages = context.read<ChatProvider>().messages;
+    final messages = _chatProvider.messages;
     if (messages.length > _lastMessageCount) {
       _lastMessageCount = messages.length;
       _scrollToBottom();
