@@ -24,6 +24,12 @@ class TradingRecordProvider with ChangeNotifier {
     _records.sort((a, b) => (b.createdAt ?? '').compareTo(a.createdAt ?? ''));
   }
 
+  void refresh() {
+    if (!_initialized) return;
+    _loadRecords();
+    notifyListeners();
+  }
+
   Future<void> addRecord(TradingRecord record) async {
     await _box.add(record);
     _loadRecords();

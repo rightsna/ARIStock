@@ -41,6 +41,14 @@ class TradingHistoryScreen extends StatelessWidget {
                 '총 ${records.length}건',
                 style: const TextStyle(color: AppTheme.textSub, fontSize: 13),
               ),
+              const SizedBox(width: 4),
+              IconButton(
+                onPressed: () => context.read<TradingRecordProvider>().refresh(),
+                icon: const Icon(Icons.refresh, size: 18, color: AppTheme.textSub),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: '갱신',
+              ),
             ],
           ),
         ),
@@ -49,103 +57,73 @@ class TradingHistoryScreen extends StatelessWidget {
           child: records.isEmpty
               ? _buildEmpty()
               : ListView.separated(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: records.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, __) =>
+                      const Divider(height: 1, color: AppTheme.textMain10, indent: 16, endIndent: 16),
                   itemBuilder: (context, index) {
                     final record = records[index];
                     final isBuy = record.side.toUpperCase() == 'BUY';
+                    final priceStr = record.price > 0
+                        ? '${record.price.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}원'
+                        : '시장가';
+                    final qtyStr = record.quantity == record.quantity.toInt()
+                        ? '${record.quantity.toInt()}주'
+                        : '${record.quantity}주';
 
-                    return Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.textMain10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      child: Row(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isBuy
-                                          ? Colors.red.withOpacity(0.1)
-                                          : Colors.blue.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      isBuy ? '매수' : '매도',
-                                      style: TextStyle(
-                                        color: isBuy ? Colors.red : Colors.blue,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    record.date,
-                                    style: const TextStyle(
-                                      color: AppTheme.textSub,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                '${record.price.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}원',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
                           Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
+                            width: 36,
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(vertical: 3),
                             decoration: BoxDecoration(
-                              color: AppTheme.backgroundLight,
-                              borderRadius: BorderRadius.circular(8),
+                              color: isBuy
+                                  ? Colors.red.withValues(alpha: 0.08)
+                                  : Colors.blue.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(4),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  '매매 이유',
-                                  style: TextStyle(
-                                    color: AppTheme.textSub,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            child: Text(
+                              isBuy ? '매수' : '매도',
+                              style: TextStyle(
+                                color: isBuy ? Colors.red : Colors.blue,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            record.date,
+                            style: const TextStyle(
+                              color: AppTheme.textSub,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          if (record.reason.isNotEmpty)
+                            Expanded(
+                              child: Text(
+                                record.reason,
+                                style: const TextStyle(
+                                  color: AppTheme.textMain54,
+                                  fontSize: 12,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  record.reason,
-                                  style: const TextStyle(
-                                    color: AppTheme.textMain,
-                                    fontSize: 13,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )
+                          else
+                            const Spacer(),
+                          const SizedBox(width: 8),
+                          Text(
+                            '$priceStr · $qtyStr',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              color: AppTheme.textMain,
                             ),
                           ),
                         ],

@@ -99,6 +99,7 @@ class KiwoomMarketDataRepository {
       response.body,
       apiId: timeframe.isDay ? 'ka10081' : 'ka10080',
     );
+
     if (raw.isEmpty) {
       // 1. 서버 측 명시적 에러 메시지 확인 (KIS/키움/커스텀 브릿지 공통)
       final errorMsg =

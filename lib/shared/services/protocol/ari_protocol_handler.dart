@@ -476,22 +476,50 @@ class ARIProtocolHandler {
 
     switch (event) {
       case 'BUY_STOCK':
-        LogProvider.info('TRADING', 'Executing BUY for $symbol: $qty shares at $price');
-        final response = await accountProvider.tradingService.buyStock(
+        LogProvider.info('TRADING', 'Executing BUY for $symbol: $qty shares at ${price.isEmpty ? "시장가" : price}');
+        final buyResponse = await accountProvider.tradingService.buyStock(
           stockCode: symbol,
           quantity: qty,
           price: price,
+          tradeType: price.isEmpty ? '03' : '00',
         );
-        return {'status': response.isSuccess ? 'success' : 'error', 'data': response.body};
+        if (buyResponse.isSuccess) {
+          final recordPrice = await _resolvePrice(symbol, price);
+          await tradingRecordProvider.addRecord(TradingRecord(
+            symbol: symbol,
+            date: DateTime.now().toString().split(' ')[0],
+            price: recordPrice,
+            side: 'BUY',
+            quantity: double.tryParse(qty) ?? 1,
+            reason: data['reason'] as String? ?? '',
+            createdAt: DateTime.now().toString(),
+          ));
+          LogProvider.info('TRADING', 'Trade record AUTO-SAVED: BUY $symbol @ $recordPrice');
+        }
+        return {'status': buyResponse.isSuccess ? 'success' : 'error', 'data': buyResponse.body};
 
       case 'SELL_STOCK':
-        LogProvider.info('TRADING', 'Executing SELL for $symbol: $qty shares at $price');
-        final response = await accountProvider.tradingService.sellStock(
+        LogProvider.info('TRADING', 'Executing SELL for $symbol: $qty shares at ${price.isEmpty ? "시장가" : price}');
+        final sellResponse = await accountProvider.tradingService.sellStock(
           stockCode: symbol,
           quantity: qty,
           price: price,
+          tradeType: price.isEmpty ? '03' : '00',
         );
-        return {'status': response.isSuccess ? 'success' : 'error', 'data': response.body};
+        if (sellResponse.isSuccess) {
+          final recordPrice = await _resolvePrice(symbol, price);
+          await tradingRecordProvider.addRecord(TradingRecord(
+            symbol: symbol,
+            date: DateTime.now().toString().split(' ')[0],
+            price: recordPrice,
+            side: 'SELL',
+            quantity: double.tryParse(qty) ?? 1,
+            reason: data['reason'] as String? ?? '',
+            createdAt: DateTime.now().toString(),
+          ));
+          LogProvider.info('TRADING', 'Trade record AUTO-SAVED: SELL $symbol @ $recordPrice');
+        }
+        return {'status': sellResponse.isSuccess ? 'success' : 'error', 'data': sellResponse.body};
 
       case 'ADD_TRADING_RECORD':
         final record = TradingRecord.fromMap(data);
@@ -503,6 +531,25 @@ class ARIProtocolHandler {
       default:
         throw Exception('Unsupported trading event: $event');
     }
+  }
+
+  /// 가격 문자열이 비어있으면(시장가) 현재가를 API로 조회해서 반환합니다.
+  Future<double> _resolvePrice(String symbol, String price) async {
+    final parsed = double.tryParse(price) ?? 0;
+    if (parsed > 0) return parsed;
+
+    try {
+      // ka10004는 호가창 데이터. buy_fpr_bid(매수1호가)가 현재가에 가장 근접한 값
+      final response = await accountProvider.marketService.getStockQuote(stockCode: symbol);
+      if (response.isSuccess) {
+        final raw = response.body['buy_fpr_bid'] ?? response.body['sel_fpr_bid'];
+        final p = double.tryParse(raw.toString())?.abs() ?? 0;
+        if (p > 0) return p;
+      }
+    } catch (e) {
+      LogProvider.error('TRADING', 'Failed to fetch quote for $symbol: $e');
+    }
+    return 0;
   }
 
   /// 종목코드(Symbol)만 있을 때 앱 내 데이터로부터 종목명을 유추합니다.

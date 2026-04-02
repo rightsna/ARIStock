@@ -65,7 +65,7 @@ class StockItemRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${stock.quantity}주',
+            '${stock.quantity.toInt()}주  ·  평단 ${format.format(stock.purchasePrice)}',
             style: TextStyle(
               color: AppTheme.textMain.withValues(alpha: 0.4),
               fontSize: 12,

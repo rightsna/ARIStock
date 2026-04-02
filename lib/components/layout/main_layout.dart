@@ -170,14 +170,17 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                     ],
                   ),
                 ),
-                child: TabBarView(
-                  controller: _tabController,
-                  children: const [
-                    AnalysisScreen(),
-                    TradingStrategyScreen(),
-                    TradingHistoryScreen(),
-                    AccountScreen()
-                  ],
+                child: ListenableBuilder(
+                  listenable: _tabController,
+                  builder: (context, _) => IndexedStack(
+                    index: _tabController.index,
+                    children: const [
+                      AnalysisScreen(),
+                      TradingStrategyScreen(),
+                      TradingHistoryScreen(),
+                      AccountScreen(),
+                    ],
+                  ),
                 ),
               ),
             ),

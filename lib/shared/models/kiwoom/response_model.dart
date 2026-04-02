@@ -12,6 +12,11 @@ class KiwoomResponse {
     this.nextKey,
   });
 
-  bool get isSuccess => statusCode == 200;
+  bool get isSuccess {
+    if (statusCode != 200) return false;
+    final returnCode = body['return_code'];
+    if (returnCode is int && returnCode != 0) return false;
+    return true;
+  }
   bool get hasNext => contYn == 'Y' && nextKey != null && nextKey!.isNotEmpty;
 }

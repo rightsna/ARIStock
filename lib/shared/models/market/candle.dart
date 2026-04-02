@@ -153,7 +153,7 @@ class Candle {
       late DateTime timestamp;
       if (timeframe == 'D' || timeframe == 'W' || timeframe == 'M') {
         var dateStr =
-            (getVal('stck_bsop_date') ?? getVal('stk_bsop_date') ?? '')
+            (getVal('stck_bsop_date') ?? getVal('stk_bsop_date') ?? getVal('dt') ?? '')
                 .toString();
         if (dateStr.length == 8) {
           final year = int.parse(dateStr.substring(0, 4));
