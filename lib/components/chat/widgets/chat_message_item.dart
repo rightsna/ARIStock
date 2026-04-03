@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../shared/theme.dart';
 import '../chat_provider.dart';
 
@@ -84,14 +85,87 @@ class ChatMessageItem extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Text(
-                message.text,
-                style: TextStyle(
-                  color: message.isUser ? Colors.white : AppTheme.textMain,
-                  height: 1.4,
-                  fontSize: 13,
-                ),
-              ),
+              child: message.isUser
+                  ? SelectableText(
+                      message.text,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        height: 1.4,
+                        fontSize: 13,
+                      ),
+                    )
+                  : MarkdownBody(
+                      data: message.text,
+                      selectable: true,
+                      styleSheet: MarkdownStyleSheet(
+                        p: const TextStyle(
+                          color: AppTheme.textMain,
+                          height: 1.4,
+                          fontSize: 13,
+                        ),
+                        h1: const TextStyle(
+                          color: AppTheme.textMain,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          height: 1.4,
+                        ),
+                        h2: const TextStyle(
+                          color: AppTheme.textMain,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          height: 1.4,
+                        ),
+                        h3: const TextStyle(
+                          color: AppTheme.textMain,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          height: 1.4,
+                        ),
+                        strong: const TextStyle(
+                          color: AppTheme.textMain,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        em: const TextStyle(
+                          color: AppTheme.textSub,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        code: TextStyle(
+                          color: AppTheme.primaryBlue,
+                          backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.08),
+                          fontSize: 12,
+                          fontFamily: 'monospace',
+                        ),
+                        codeblockDecoration: BoxDecoration(
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        blockquoteDecoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.4),
+                              width: 3,
+                            ),
+                          ),
+                        ),
+                        blockquote: const TextStyle(
+                          color: AppTheme.textSub,
+                          fontSize: 13,
+                        ),
+                        listBullet: const TextStyle(
+                          color: AppTheme.textMain,
+                          fontSize: 13,
+                        ),
+                        tableBody: const TextStyle(
+                          color: AppTheme.textMain,
+                          fontSize: 12,
+                        ),
+                        tableHead: const TextStyle(
+                          color: AppTheme.textMain,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
             ),
           ),
         ],

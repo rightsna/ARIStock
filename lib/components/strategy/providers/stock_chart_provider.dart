@@ -20,17 +20,27 @@ class StockChartProvider extends ChangeNotifier {
   final Map<String, _ChartCacheEntry> _cache = {};
   bool _isLoading = false;
   String? _error;
+  int _selectedPeriod = 90;
 
   List<Candle> _currentCandles = [];
   List<Candle> get currentCandles => _currentCandles;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  int get selectedPeriod => _selectedPeriod;
+
+  // period == 0: 1분봉 1시간치 = 60개
+  // period == 1: 30분봉 24시간치 = 48개
+  static const int _intraday1minCandles = 60;
+  static const int _intraday30minCandles = 48;
+
+  String _cacheKey(String symbol, int period) => '${symbol}_$period';
 
   Future<void> fetchDailyChart(String symbol) async {
-    // 1분 이내 동일 종목 요청시 캐시 반환
-    if (_cache.containsKey(symbol) && _cache[symbol]!.isFresh) {
-      debugPrint('StockChartProvider: Using fresh cache for $symbol');
-      _currentCandles = _cache[symbol]!.candles;
+    final key = _cacheKey(symbol, _selectedPeriod);
+
+    if (_cache.containsKey(key) && _cache[key]!.isFresh) {
+      debugPrint('StockChartProvider: Using fresh cache for $key');
+      _currentCandles = _cache[key]!.candles;
       _error = null;
       notifyListeners();
       return;
@@ -41,14 +51,26 @@ class StockChartProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint('StockChartProvider: Fetching real API for $symbol');
+      debugPrint('StockChartProvider: Fetching real API for $key');
+      final MarketTimeframe timeframe;
+      final int limit;
+      if (_selectedPeriod == 0) {
+        timeframe = MarketTimeframe.minute1;
+        limit = _intraday1minCandles;
+      } else if (_selectedPeriod == 1) {
+        timeframe = MarketTimeframe.minute30;
+        limit = _intraday30minCandles;
+      } else {
+        timeframe = MarketTimeframe.day;
+        limit = _selectedPeriod;
+      }
       final result = await marketDataRepository.fetchCandles(
         symbol: symbol,
-        timeframe: MarketTimeframe.day,
-        limit: 90,
+        timeframe: timeframe,
+        limit: limit,
       );
-      
-      _cache[symbol] = _ChartCacheEntry(result, DateTime.now());
+
+      _cache[key] = _ChartCacheEntry(result, DateTime.now());
       _currentCandles = result;
     } catch (e) {
       _error = e.toString();
@@ -56,6 +78,15 @@ class StockChartProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> setPeriod(int period, String? symbol) async {
+    if (_selectedPeriod == period) return;
+    _selectedPeriod = period;
+    notifyListeners();
+    if (symbol != null) {
+      await fetchDailyChart(symbol);
     }
   }
 

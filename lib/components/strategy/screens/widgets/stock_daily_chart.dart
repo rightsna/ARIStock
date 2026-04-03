@@ -36,49 +36,106 @@ class _StockDailyChartState extends State<StockDailyChart> {
     }
   }
 
+  static const _periods = [0, 1, 7, 30, 90];
+  static const _periodLabels = {0: '1시간', 1: '1일', 7: '7일', 30: '30일', 90: '90일'};
+
   @override
   Widget build(BuildContext context) {
     final chartProvider = context.watch<StockChartProvider>();
     final candles = chartProvider.currentCandles;
+    final selectedPeriod = chartProvider.selectedPeriod;
+    final selectedSymbol = context.watch<WatchlistProvider>().selectedSymbol;
 
     return Container(
-      height: 180,
+      height: 200,
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTheme.backgroundLight.withOpacity(0.3),
+        color: AppTheme.backgroundLight.withValues(alpha: 0.3),
         border: const Border(
           bottom: BorderSide(color: AppTheme.textMain10, width: 1),
         ),
       ),
-      child: chartProvider.isLoading
-          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-          : chartProvider.error != null
-          ? Center(
-              child: Text(
-                '데이터를 불러올 수 없습니다.',
-                style: TextStyle(
-                  color: Colors.red.withOpacity(0.5),
-                  fontSize: 12,
-                ),
-              ),
-            )
-          : candles.isEmpty
-          ? const Center(
-              child: Text(
-                '차트 데이터가 없습니다.',
-                style: TextStyle(color: AppTheme.textSub, fontSize: 12),
-              ),
-            )
-          : CustomPaint(
-              size: Size.infinite,
-              painter: _CandleChartPainter(
-                candles,
-                entryPrices: widget.entryPrices,
-                targetPrices: widget.targetPrices,
-                stopLoss: widget.stopLoss,
-              ),
+      child: Column(
+        children: [
+          // 기간 선택 버튼
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: _periods.map((period) {
+                final isSelected = selectedPeriod == period;
+                return GestureDetector(
+                  onTap: () => context
+                      .read<StockChartProvider>()
+                      .setPeriod(period, selectedSymbol),
+                  child: Container(
+                    margin: const EdgeInsets.only(left: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppTheme.primaryBlue
+                          : AppTheme.primaryBlue.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _periodLabels[period]!,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected
+                            ? Colors.white
+                            : AppTheme.primaryBlue,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
+          ),
+          // 차트 영역
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: chartProvider.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : chartProvider.error != null
+                  ? Center(
+                      child: Text(
+                        '데이터를 불러올 수 없습니다.',
+                        style: TextStyle(
+                          color: Colors.red.withValues(alpha: 0.5),
+                          fontSize: 12,
+                        ),
+                      ),
+                    )
+                  : candles.isEmpty
+                  ? const Center(
+                      child: Text(
+                        '차트 데이터가 없습니다.',
+                        style: TextStyle(
+                          color: AppTheme.textSub,
+                          fontSize: 12,
+                        ),
+                      ),
+                    )
+                  : CustomPaint(
+                      size: Size.infinite,
+                      painter: _CandleChartPainter(
+                        candles,
+                        entryPrices: widget.entryPrices,
+                        targetPrices: widget.targetPrices,
+                        stopLoss: widget.stopLoss,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -193,14 +250,14 @@ class _CandleChartPainter extends CustomPainter {
       canvas,
       maxHigh.toInt().toString(),
       0,
-      Colors.red.withOpacity(0.5),
+      Colors.red.withValues(alpha: 0.5),
       size.width,
     );
     _drawText(
       canvas,
       minLow.toInt().toString(),
       size.height - 12,
-      Colors.blue.withOpacity(0.5),
+      Colors.blue.withValues(alpha: 0.5),
       size.width,
     );
   }
@@ -218,7 +275,7 @@ class _CandleChartPainter extends CustomPainter {
     if (y < 0 || y > size.height) return;
 
     final Paint paint = Paint()
-      ..color = color.withOpacity(0.4)
+      ..color = color.withValues(alpha: 0.4)
       ..strokeWidth = 0.8;
 
     // 점선 그리기 (전체 가로지르기)
@@ -238,7 +295,7 @@ class _CandleChartPainter extends CustomPainter {
           color: color,
           fontSize: 9,
           fontWeight: FontWeight.bold,
-          backgroundColor: Colors.white.withOpacity(0.2),
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
         ),
       ),
       textDirection: TextDirection.ltr,
