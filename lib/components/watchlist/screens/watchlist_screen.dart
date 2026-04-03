@@ -261,16 +261,6 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
     return Row(
       children: [
         IconButton(
-          onPressed: () {
-            context.read<AnalysisProvider>().selectStock(symbol);
-            context.read<WatchlistProvider>().selectStock(symbol);
-            DefaultTabController.of(context).animateTo(0); // 종목분석 탭
-            Navigator.pop(context); // Drawer 닫기
-          },
-          icon: const Icon(Icons.analytics_outlined, color: AppTheme.textMain54, size: 20),
-          tooltip: '종목분석',
-        ),
-        IconButton(
           onPressed: () => context.read<WatchlistProvider>().removeStock(symbol),
           icon: const Icon(Icons.delete_outline, color: AppTheme.accentRed, size: 20),
           tooltip: '삭제',
