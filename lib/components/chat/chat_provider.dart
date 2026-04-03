@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ari_plugin/ari_plugin.dart';
 
-/// 채팅 메시지 데이터 모델 
+/// 채팅 메시지 데이터 모델
 class ChatMessage {
   final String text;
   final bool isUser;
@@ -36,14 +36,18 @@ class ChatProvider extends ChangeNotifier {
       final message = data['message']?.toString() ?? '';
 
       if (message.isEmpty) return;
-      if (requestId.isNotEmpty && _messages.any((m) => m.isUser && m.requestId == requestId)) return;
+      if (requestId.isNotEmpty &&
+          _messages.any((m) => m.isUser && m.requestId == requestId))
+        return;
 
-      _messages.add(ChatMessage(
-        text: message,
-        isUser: true,
-        createdAt: DateTime.now(),
-        requestId: requestId,
-      ));
+      _messages.add(
+        ChatMessage(
+          text: message,
+          isUser: true,
+          createdAt: DateTime.now(),
+          requestId: requestId,
+        ),
+      );
       notifyListeners();
     });
 
@@ -52,23 +56,29 @@ class ChatProvider extends ChangeNotifier {
       final payload = data['data'] is Map ? data['data'] as Map : data;
       final response = payload['response']?.toString() ?? '';
       final requestId = payload['requestId']?.toString() ?? '';
-      
+
       if (response.isEmpty) return;
-      
+
       // 답변이 오면 프로그래스 메시지 제거
       if (requestId.isNotEmpty) {
         _removeProgressMessage(requestId);
       }
 
       // AI 답변 중복 체크
-      if (requestId.isNotEmpty && _messages.any((m) => !m.isUser && !m.isSystem && m.requestId == requestId)) return;
+      if (requestId.isNotEmpty &&
+          _messages.any(
+            (m) => !m.isUser && !m.isSystem && m.requestId == requestId,
+          ))
+        return;
 
-      _messages.add(ChatMessage(
-        text: response, 
-        isUser: false, 
-        createdAt: DateTime.now(), 
-        requestId: requestId
-      ));
+      _messages.add(
+        ChatMessage(
+          text: response,
+          isUser: false,
+          createdAt: DateTime.now(),
+          requestId: requestId,
+        ),
+      );
       notifyListeners();
     });
 
@@ -111,14 +121,32 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void addAiMessage(String text, {String? requestId}) {
-    if (requestId != null && _messages.any((m) => !m.isUser && m.requestId == requestId)) return;
-    _messages.add(ChatMessage(text: text, isUser: false, createdAt: DateTime.now(), requestId: requestId));
+    if (requestId != null &&
+        _messages.any((m) => !m.isUser && m.requestId == requestId))
+      return;
+    _messages.add(
+      ChatMessage(
+        text: text,
+        isUser: false,
+        createdAt: DateTime.now(),
+        requestId: requestId,
+      ),
+    );
     notifyListeners();
   }
 
   void addUserMessage(String text, {String? requestId}) {
-    if (requestId != null && _messages.any((m) => m.isUser && m.requestId == requestId)) return;
-    _messages.add(ChatMessage(text: text, isUser: true, createdAt: DateTime.now(), requestId: requestId));
+    if (requestId != null &&
+        _messages.any((m) => m.isUser && m.requestId == requestId))
+      return;
+    _messages.add(
+      ChatMessage(
+        text: text,
+        isUser: true,
+        createdAt: DateTime.now(),
+        requestId: requestId,
+      ),
+    );
     notifyListeners();
   }
 
