@@ -23,113 +23,111 @@ class AssetSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppTheme.primaryBlue, Color(0xFF1A237E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryBlue.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '총 자산 가치',
-                style: TextStyle(color: AppTheme.textMain70, fontSize: 14),
-              ),
-              _buildRefreshButton(),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            format.format(totalAssets),
-            style: const TextStyle(
-              color: AppTheme.textMain,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildSimpleStat(
-                '수익률',
-                '${profitRate > 0 ? '+' : ''}${profitRate.toStringAsFixed(2)}%',
-                valueColor: profitRate > 0
-                    ? AppTheme.accentGreen
-                    : (profitRate < 0 ? AppTheme.accentRed : AppTheme.textMain),
-              ),
-              const SizedBox(width: 24),
-              _buildSimpleStat('예수금', format.format(deposit)),
-              const SizedBox(width: 24),
-              _buildSimpleStat('보유 종목', '$stockCount개'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+    final bool isPositive = profitRate >= 0;
+    final String currencySymbol = 'KRW';
 
-  Widget _buildRefreshButton() {
-    return IconButton(
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
-      onPressed: accountProvider.isRefreshing
-          ? null
-          : () => accountProvider.manualFetchAccounts(),
-      icon: accountProvider.isRefreshing
-          ? const SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppTheme.textMain70,
-              ),
-            )
-          : const Icon(
-              Icons.refresh_rounded,
-              color: AppTheme.textMain70,
-              size: 18,
-            ),
-      tooltip: '새로고침',
-    );
-  }
-
-  Widget _buildSimpleStat(
-    String label,
-    String value, {
-    Color valueColor = AppTheme.textMain,
-  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          'Total Balance',
           style: TextStyle(
-            color: AppTheme.textMain.withValues(alpha: 0.5),
+            color: AppTheme.textSub.withOpacity(0.5),
             fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 4), // 8 -> 4
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              format.format(totalAssets).replaceAll('₩', '').trim(),
+              style: const TextStyle(
+                color: AppTheme.textMain,
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              currencySymbol,
+              style: TextStyle(
+                color: AppTheme.textMain.withValues(alpha: 0.4),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20), // 32 -> 20
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16), // 20 -> 16
+          decoration: BoxDecoration(
+            border: Border.symmetric(
+              horizontal: BorderSide(color: AppTheme.textMain.withValues(alpha: 0.05)),
+            ),
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    'PROFIT',
+                    '${isPositive ? '+' : ''}${profitRate.toStringAsFixed(2)}%',
+                    valueColor: isPositive ? AppTheme.accentGreen : AppTheme.accentRed,
+                  ),
+                ),
+                _buildVerticalDivider(),
+                Expanded(
+                  child: _buildStatItem(
+                    'DEPOSIT',
+                    format.format(deposit).replaceAll('₩', '').trim(),
+                  ),
+                ),
+                _buildVerticalDivider(),
+                Expanded(
+                  child: _buildStatItem('HOLDINGS', '$stockCount'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVerticalDivider() {
+    return Container(
+      width: 1,
+      height: 20,
+      color: AppTheme.textMain.withValues(alpha: 0.05),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value, {Color? valueColor}) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: AppTheme.textSub.withValues(alpha: 0.4),
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 6),
         Text(
           value,
           style: TextStyle(
-            color: valueColor,
+            color: valueColor ?? AppTheme.textMain,
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],

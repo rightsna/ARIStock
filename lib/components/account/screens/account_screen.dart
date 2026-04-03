@@ -12,7 +12,9 @@ import 'debug/kiwoom_debug_screen.dart';
 
 /// 계좌 화면: API 연동 상태에 따라 설정 화면 또는 포트폴리오 메인 화면을 표시합니다.
 class AccountScreen extends StatelessWidget {
-  const AccountScreen({super.key});
+  final VoidCallback? onNavigateToAnalysis;
+
+  const AccountScreen({super.key, this.onNavigateToAnalysis});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class AccountScreen extends StatelessWidget {
     final bool hasData = accountProvider.hasApiKeys;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: AppTheme.surfaceWhite, // 더 깔끔하고 고급스러운 순백색 배경
       body: hasData
           ? _buildMainView(context, accountProvider)
           : const ApiKeySetupScreen(),
@@ -38,50 +40,35 @@ class AccountScreen extends StatelessWidget {
     final displayStocks = accountProvider.kiwoomStocks;
 
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24), // 상단 및 측면 여백 축소
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '나의 계좌',
-                      style: TextStyle(
-                        color: AppTheme.textMain,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: accountProvider.isRefreshing
-                          ? null
-                          : () => accountProvider.manualFetchAccounts(),
-                      icon: accountProvider.isRefreshing
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppTheme.primaryBlue,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.refresh,
-                              color: AppTheme.textMain54,
-                            ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
                 ApiStatusBar(
                   accountProvider: accountProvider,
                   onDisconnect: _showDisconnectDialog,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 24), // 32 -> 24
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'PORTFOLIO',
+                      style: TextStyle(
+                        color: AppTheme.textMain.withValues(alpha: 0.15),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                    _buildTopActions(context, accountProvider),
+                  ],
+                ),
+                const SizedBox(height: 16), // 24 -> 16
                 AssetSummaryCard(
                   accountProvider: accountProvider,
                   totalAssets: displayTotalAssets,
@@ -90,16 +77,23 @@ class AccountScreen extends StatelessWidget {
                   stockCount: displayStocks.length,
                   format: format,
                 ),
-                const SizedBox(height: 32),
-                const Text(
-                  '보유 종목 내역',
-                  style: TextStyle(
-                    color: AppTheme.textMain,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                const SizedBox(height: 48), // 56 -> 48
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'HOLDINGS',
+                      style: TextStyle(
+                        color: AppTheme.textMain,
+                        fontSize: 17, // 18 -> 17
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    _buildCountBadge(displayStocks.length),
+                  ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8), // 12 -> 8
               ],
             ),
           ),
@@ -107,27 +101,75 @@ class AccountScreen extends StatelessWidget {
         _buildStockList(context, displayStocks, format),
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const KiwoomDebugScreen()),
-                );
-              },
-              icon: const Icon(Icons.bug_report_outlined, size: 18),
-              label: const Text('키움 API 디버그 도구'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.textMain38,
-                side: const BorderSide(color: AppTheme.textMain10),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            child: Column(
+              children: [
+                const SizedBox(height: 24), // 48 -> 24
+                OutlinedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const KiwoomDebugScreen()),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.textMain.withValues(alpha: 0.3),
+                    side: BorderSide(color: AppTheme.textMain.withValues(alpha: 0.05)),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('DEBUG SYSTEM', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                ),
+              ],
             ),
           ),
         ),
-        const SliverToBoxAdapter(child: SizedBox(height: 80)),
       ],
+    );
+  }
+
+  Widget _buildCountBadge(int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.textMain.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        '$count',
+        style: const TextStyle(
+          color: AppTheme.textMain,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopActions(BuildContext context, AccountProvider provider) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.textMain.withOpacity(0.05)),
+      ),
+      child: IconButton(
+        onPressed: provider.isRefreshing ? null : () => provider.manualFetchAccounts(),
+        icon: provider.isRefreshing
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppTheme.primaryBlue,
+                ),
+              )
+            : const Icon(
+                Icons.refresh_rounded,
+                color: AppTheme.textMain,
+                size: 22,
+              ),
+      ),
     );
   }
 
@@ -172,7 +214,9 @@ class AccountScreen extends StatelessWidget {
             format: format,
             onTap: () {
               context.read<AnalysisProvider>().selectStock(stock.symbol);
-              DefaultTabController.of(context).animateTo(0);
+              if (onNavigateToAnalysis != null) {
+                onNavigateToAnalysis!();
+              }
             },
           );
         }, childCount: stocks.length),

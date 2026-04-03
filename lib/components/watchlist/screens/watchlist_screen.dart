@@ -21,8 +21,8 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
       decoration: BoxDecoration(
         color: AppTheme.backgroundLight,
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(30),
-          bottomLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+          bottomRight: Radius.circular(30),
         ),
       ),
       child: Column(
@@ -57,7 +57,7 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
       padding: const EdgeInsets.fromLTRB(24, 32, 16, 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(30)),
+        borderRadius: const BorderRadius.only(topRight: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),

@@ -16,38 +16,50 @@ class StockItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double profit = stock.profitPercentage;
+    final bool isPositive = profit >= 0;
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      splashFactory: NoSplash.splashFactory,
+      highlightColor: AppTheme.primaryBlue.withOpacity(0.04),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 16), // 20 -> 16
         decoration: BoxDecoration(
-          color: AppTheme.surfaceWhite,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.textMain.withValues(alpha: 0.05)),
+          border: Border(
+            bottom: BorderSide(color: AppTheme.textMain.withValues(alpha: 0.05)),
+          ),
         ),
         child: Row(
           children: [
-            _buildIcon(),
+            _buildIcon(stock.name),
             const SizedBox(width: 16),
             _buildStockInfo(),
-            _buildPriceInfo(),
+            _buildPriceInfo(profit, isPositive),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildIcon() {
+  Widget _buildIcon(String name) {
+    final String initial = name.isNotEmpty ? name[0] : '?';
     return Container(
-      width: 48,
-      height: 48,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
-        color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.textMain.withValues(alpha: 0.03),
+        shape: BoxShape.circle,
       ),
-      child: const Icon(Icons.show_chart_rounded, color: AppTheme.primaryBlue),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: AppTheme.textMain,
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
     );
   }
 
@@ -60,15 +72,19 @@ class StockItemRow extends StatelessWidget {
             stock.name,
             style: const TextStyle(
               color: AppTheme.textMain,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
               fontSize: 16,
+              letterSpacing: -0.4,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
-            '${stock.quantity.toInt()}주  ·  평단 ${format.format(stock.purchasePrice)}',
+            '${stock.quantity.toInt()} SHARES  ·  ${format.format(stock.purchasePrice).replaceAll('₩', '').trim()}',
             style: TextStyle(
-              color: AppTheme.textMain.withValues(alpha: 0.4),
-              fontSize: 12,
+              color: AppTheme.textSub.withValues(alpha: 0.4),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.2,
             ),
           ),
         ],
@@ -76,26 +92,26 @@ class StockItemRow extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceInfo() {
-    final profit = stock.profitPercentage;
+  Widget _buildPriceInfo(double profit, bool isPositive) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          format.format(stock.totalCurrentAmount),
+          format.format(stock.totalCurrentAmount).replaceAll('₩', '').trim(),
           style: const TextStyle(
             color: AppTheme.textMain,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w800,
+            fontSize: 17,
+            letterSpacing: -0.6,
           ),
         ),
+        const SizedBox(height: 4),
         Text(
-          '${profit > 0 ? '+' : ''}${profit.toStringAsFixed(2)}%',
+          '${isPositive ? '▲' : '▼'} ${profit.abs().toStringAsFixed(2)}%',
           style: TextStyle(
-            color: profit > 0
-                ? AppTheme.accentGreen
-                : (profit < 0 ? AppTheme.accentRed : AppTheme.textMain54),
+            color: isPositive ? AppTheme.accentGreen : AppTheme.accentRed,
             fontSize: 12,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],

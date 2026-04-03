@@ -5,7 +5,6 @@ import '../../providers/analysis_provider.dart';
 import '../../../../shared/theme.dart';
 import 'widgets/gantt_empty_placeholder.dart';
 import 'widgets/gantt_chart_container.dart';
-import '../issue/issue_detail_sheet.dart';
 
 class AnalysisIssueGantt extends StatefulWidget {
   final String symbol;
@@ -97,17 +96,7 @@ class _AnalysisIssueGanttState extends State<AnalysisIssueGantt> {
   }
 
   void _showDetails(InvestmentIssue issue) {
-    // 기본 동작: 이슈 상세 시트 표시
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => IssueDetailSheet(
-        symbol: widget.symbol,
-        issue: issue,
-        provider: context.read<AnalysisProvider>(),
-      ),
-    );
+    context.read<AnalysisProvider>().selectIssue(issue);
   }
 
   @override

@@ -82,6 +82,29 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Row(
+              children: [
+                const Icon(Icons.auto_awesome_outlined, color: AppTheme.primaryBlue, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  '${selectedStock.name} 매매전략',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: AppTheme.textMain,
+                  ),
+                ),
+                const Spacer(),
+                if (strategy != null)
+                  Text(
+                    '업데이트: ${strategy.updatedAt}',
+                    style: const TextStyle(color: AppTheme.textSub, fontSize: 12),
+                  ),
+              ],
+            ),
+          ),
           StockDailyChart(
             entryPrices: entryPrices,
             targetPrices: targetPrices,
@@ -177,33 +200,6 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.auto_awesome,
-                size: 14,
-                color: AppTheme.primaryBlue,
-              ),
-              const SizedBox(width: 6),
-              const Text(
-                'AI 매매전략',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryBlue,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                updatedAt,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.textMain38,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           MarkdownBody(
             data: content,
             styleSheet: MarkdownStyleSheet(

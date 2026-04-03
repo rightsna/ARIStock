@@ -8,10 +8,12 @@ class AnalysisProvider with ChangeNotifier {
 
   List<StockAnalysis> _analyses = [];
   StockAnalysis? _selectedAnalysis;
+  InvestmentIssue? _selectedIssue;
   bool _isLoading = false;
 
   List<StockAnalysis> get analyses => _analyses;
   StockAnalysis? get selectedAnalysis => _selectedAnalysis;
+  InvestmentIssue? get selectedIssue => _selectedIssue;
   bool get isLoading => _isLoading;
 
   Future<void> init() async {
@@ -24,6 +26,12 @@ class AnalysisProvider with ChangeNotifier {
 
   Future<void> selectStock(String symbol) async {
     _selectedAnalysis = await _repository.getAnalysis(symbol);
+    _selectedIssue = null;
+    notifyListeners();
+  }
+
+  void selectIssue(InvestmentIssue? issue) {
+    _selectedIssue = issue;
     notifyListeners();
   }
 
@@ -158,6 +166,11 @@ class AnalysisProvider with ChangeNotifier {
       status: wasResolved ? 'active' : 'resolved',
       endDate: wasResolved ? null : today,
     );
+    
+    if (_selectedIssue?.id == issue.id) {
+      _selectedIssue = null;
+      notifyListeners();
+    }
   }
 
   Future<void> deleteIssue(InvestmentIssue issue) async {
@@ -169,6 +182,11 @@ class AnalysisProvider with ChangeNotifier {
 
     final updatedAnalysis = _selectedAnalysis!.copyWith(issues: updatedIssues);
     await _saveAndRefresh(updatedAnalysis);
+    
+    if (_selectedIssue?.id == issue.id) {
+      _selectedIssue = null;
+      notifyListeners();
+    }
   }
 
   /// 제목(Title)을 기준으로 이슈 삭제
