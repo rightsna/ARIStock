@@ -37,16 +37,6 @@ dependencies:
   provider: ^6.1.5+1
   intl: ^0.20.2
   google_fonts: ^8.0.2
-  flutter_markdown: ^0.7.7+1
-  ari_plugin:
-    git:
-      url: https://github.com/rightsna/ARIAgent.git
-      ref: main
-      path: ari-framework/plugin
-  ari_widgets:
-    path: ../ari-framework/widgets
-
-dependency_overrides:
   ari_plugin:
     path: ../ari-framework/plugin
   hive: ^2.2.3
