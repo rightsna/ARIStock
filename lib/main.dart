@@ -87,6 +87,8 @@ void main(List<String> args) async {
       readArg('--host=') ??
       const String.fromEnvironment('ARI_HOST', defaultValue: '127.0.0.1');
 
+  final taskProvider = AriTaskProvider();
+
   if (port.isNotEmpty) {
     AriAgent.init(host: host, port: int.parse(port));
     AriAgent.connect();
@@ -104,6 +106,9 @@ void main(List<String> args) async {
     );
     handler.start();
 
+    // AriTaskProvider 초기화 (동일 인스턴스 사용)
+    await taskProvider.init();
+
     // Headless 모드 체크 (UI 없이 백그라운드 서비스로 동작)
     if (isHeadless) {
       debugPrint('ARIStock: Running in headless mode...');
@@ -120,6 +125,7 @@ void main(List<String> args) async {
         ChangeNotifierProvider.value(value: watchlistProvider),
         ChangeNotifierProvider.value(value: tradingStrategyProvider),
         ChangeNotifierProvider.value(value: tradingRecordProvider),
+        ChangeNotifierProvider.value(value: taskProvider),
         ChangeNotifierProvider(create: (_) => StockChartProvider(marketDataService)),
       ],
       child: const ARIStockApp(),

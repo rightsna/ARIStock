@@ -5,8 +5,15 @@ import '../../../shared/theme.dart';
 import '../providers/trading_record_provider.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
 
-class TradingHistoryScreen extends StatelessWidget {
+class TradingHistoryScreen extends StatefulWidget {
   const TradingHistoryScreen({super.key});
+
+  @override
+  State<TradingHistoryScreen> createState() => _TradingHistoryScreenState();
+}
+
+class _TradingHistoryScreenState extends State<TradingHistoryScreen> {
+  String? _expandedTaskId;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +35,11 @@ class TradingHistoryScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const Icon(Icons.history, color: AppTheme.primaryBlue, size: 20),
+                const Icon(
+                  Icons.history,
+                  color: AppTheme.primaryBlue,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   '${selectedStock.name} 매매기록',
@@ -45,8 +56,13 @@ class TradingHistoryScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 IconButton(
-                  onPressed: () => context.read<TradingRecordProvider>().refresh(),
-                  icon: const Icon(Icons.refresh, size: 18, color: AppTheme.textSub),
+                  onPressed: () =>
+                      context.read<TradingRecordProvider>().refresh(),
+                  icon: const Icon(
+                    Icons.refresh,
+                    size: 18,
+                    color: AppTheme.textSub,
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   tooltip: '갱신',
@@ -55,14 +71,19 @@ class TradingHistoryScreen extends StatelessWidget {
             ),
           ),
           const Divider(height: 1, color: AppTheme.textMain10),
+          _buildTaskBanner(context),
           Expanded(
             child: records.isEmpty
                 ? _buildEmpty()
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: records.length,
-                    separatorBuilder: (_, __) =>
-                        const Divider(height: 1, color: AppTheme.textMain10, indent: 16, endIndent: 16),
+                    separatorBuilder: (_, __) => const Divider(
+                      height: 1,
+                      color: AppTheme.textMain10,
+                      indent: 16,
+                      endIndent: 16,
+                    ),
                     itemBuilder: (context, index) {
                       final record = records[index];
                       final isBuy = record.side.toUpperCase() == 'BUY';
@@ -74,7 +95,10 @@ class TradingHistoryScreen extends StatelessWidget {
                           : '${record.quantity}주';
 
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         child: Row(
                           children: [
                             Container(
@@ -133,6 +157,178 @@ class TradingHistoryScreen extends StatelessWidget {
                       );
                     },
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTaskBanner(BuildContext context) {
+    final taskProvider = context.watch<AriTaskProvider>();
+    final stockTasks = taskProvider.tasksForApp('aristock');
+
+    if (stockTasks.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryBlue.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primaryBlue.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.auto_awesome,
+                color: AppTheme.primaryBlue,
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                '예약된 자동매매',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: AppTheme.textMain,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${stockTasks.length}개 활성',
+                  style: const TextStyle(
+                    color: AppTheme.primaryBlue,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...stockTasks.map(
+            (task) {
+              final isExpanded = _expandedTaskId == task.id;
+              return Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                child: Column(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _expandedTaskId = isExpanded ? null : task.id;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    task.label,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textMain,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    task.cronDescription,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppTheme.textSub,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                              size: 18,
+                              color: AppTheme.textSub,
+                            ),
+                            const SizedBox(width: 8),
+                            Transform.scale(
+                              scale: 0.8,
+                              child: Switch(
+                                value: task.enabled,
+                                onChanged: (val) => taskProvider.toggleTask(task.id),
+                                activeColor: AppTheme.primaryBlue,
+                                inactiveTrackColor: Colors.grey.withValues(alpha: 0.1),
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => _showDeleteConfirm(context, taskProvider, task.id),
+                              icon: const Icon(Icons.delete_outline, size: 18),
+                              color: Colors.red.withValues(alpha: 0.6),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              visualDensity: VisualDensity.compact,
+                              tooltip: '삭제',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (isExpanded)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 8, top: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.textMain.withValues(alpha: 0.04),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          task.prompt,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textMain54,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirm(BuildContext context, AriTaskProvider provider, String taskId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('태스크 삭제'),
+        content: const Text('이 자동매매 태스크를 정말 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소', style: TextStyle(color: AppTheme.textSub)),
+          ),
+          TextButton(
+            onPressed: () {
+              provider.deleteTask(taskId);
+              Navigator.pop(context);
+            },
+            child: const Text('삭제', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

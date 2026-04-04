@@ -281,7 +281,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                       child: (selectedIssue != null && selectedStock != null)
                           ? Align(
                               key: ValueKey(
-                                selectedIssue!.id,
+                                selectedIssue.id,
                               ), // Key가 바뀌어야 애니메이션 동작
                               alignment: Alignment.bottomCenter,
                               child: Padding(
@@ -290,7 +290,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                                 ),
                                 child: IssueDetailSheet(
                                   symbol: selectedStock.symbol,
-                                  issue: selectedIssue!,
+                                  issue: selectedIssue,
                                   provider: analysisProvider,
                                 ),
                               ),
