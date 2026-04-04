@@ -4,7 +4,6 @@ import '../analysis/screens/analysis_screen.dart';
 import '../account/screens/account_screen.dart';
 import '../strategy/screens/trading_strategy_screen.dart';
 import '../watchlist/screens/watchlist_screen.dart';
-import '../chat/chat_panel.dart';
 import 'package:provider/provider.dart';
 import '../watchlist/providers/watchlist_provider.dart';
 import '../../../shared/theme.dart';
@@ -35,7 +34,8 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _isChatOpen = Hive.box(_settingsBox).get(_chatOpenKey, defaultValue: true) as bool;
+    _isChatOpen =
+        Hive.box(_settingsBox).get(_chatOpenKey, defaultValue: true) as bool;
     _tabController = TabController(length: 4, vsync: this);
   }
 
@@ -62,7 +62,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
             child: Consumer<AnalysisProvider>(
               builder: (context, analysisProvider, child) {
                 final selectedIssue = analysisProvider.selectedIssue;
-                final selectedStock = context.read<WatchlistProvider>().selectedStock;
+                final selectedStock = context
+                    .read<WatchlistProvider>()
+                    .selectedStock;
 
                 return Stack(
                   children: [
@@ -80,15 +82,24 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                                color: AppTheme.primaryBlue.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.auto_graph, color: AppTheme.primaryBlue, size: 24),
+                              child: const Icon(
+                                Icons.auto_graph,
+                                color: AppTheme.primaryBlue,
+                                size: 24,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             const Text(
                               'ARIStock',
-                              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: -0.5),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.5,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             StreamBuilder<bool>(
@@ -101,7 +112,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                                   height: 8,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: isConnected ? Colors.green : Colors.red,
+                                    color: isConnected
+                                        ? Colors.green
+                                        : Colors.red,
                                   ),
                                 );
                               },
@@ -111,19 +124,33 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                               builder: (context, provider, child) {
                                 final stock = provider.selectedStock;
                                 return InkWell(
-                                  onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                                  onTap: () =>
+                                      _scaffoldKey.currentState?.openDrawer(),
                                   borderRadius: BorderRadius.circular(20),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primaryBlue.withValues(alpha: 0.06),
+                                      color: AppTheme.primaryBlue.withValues(
+                                        alpha: 0.06,
+                                      ),
                                       borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: AppTheme.primaryBlue.withValues(alpha: 0.15)),
+                                      border: Border.all(
+                                        color: AppTheme.primaryBlue.withValues(
+                                          alpha: 0.15,
+                                        ),
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(Icons.show_chart, color: AppTheme.primaryBlue, size: 14),
+                                        const Icon(
+                                          Icons.show_chart,
+                                          color: AppTheme.primaryBlue,
+                                          size: 14,
+                                        ),
                                         const SizedBox(width: 6),
                                         Text(
                                           stock?.name ?? '종목 선택',
@@ -134,8 +161,12 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                                           ),
                                         ),
                                         const SizedBox(width: 4),
-                                        Icon(Icons.keyboard_arrow_down,
-                                            color: AppTheme.primaryBlue.withValues(alpha: 0.5), size: 16),
+                                        Icon(
+                                          Icons.keyboard_arrow_down,
+                                          color: AppTheme.primaryBlue
+                                              .withValues(alpha: 0.5),
+                                          size: 16,
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -148,25 +179,41 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                           IconButton(
                             onPressed: _toggleChat,
                             icon: Icon(
-                              _isChatOpen ? Icons.chat_bubble : Icons.chat_bubble_outline,
-                              color: _isChatOpen ? AppTheme.primaryBlue : AppTheme.textSub,
+                              _isChatOpen
+                                  ? Icons.chat_bubble
+                                  : Icons.chat_bubble_outline,
+                              color: _isChatOpen
+                                  ? AppTheme.primaryBlue
+                                  : AppTheme.textSub,
                             ),
                           ),
                           const SizedBox(width: 8),
                         ],
                         elevation: 0,
-                        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).scaffoldBackgroundColor,
                         bottom: TabBar(
                           controller: _tabController,
-                          tabs: const [Tab(text: '종목분석'), Tab(text: '매매전략'), Tab(text: '매매기록'), Tab(text: '계좌')],
+                          tabs: const [
+                            Tab(text: '종목분석'),
+                            Tab(text: '매매전략'),
+                            Tab(text: '매매기록'),
+                            Tab(text: '계좌'),
+                          ],
                           indicatorColor: AppTheme.primaryBlue,
                           indicatorWeight: 3,
                           indicatorSize: TabBarIndicatorSize.label,
                           labelColor: AppTheme.primaryBlue,
                           unselectedLabelColor: AppTheme.textSub,
-                          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          labelStyle: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                           dividerColor: Colors.transparent,
-                          overlayColor: WidgetStateProperty.all(Colors.transparent),
+                          overlayColor: WidgetStateProperty.all(
+                            Colors.transparent,
+                          ),
                         ),
                       ),
                       body: Container(
@@ -188,9 +235,11 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                               const AnalysisScreen(),
                               const TradingStrategyScreen(),
                               const TradingHistoryScreen(),
-                              AccountScreen(onNavigateToAnalysis: () {
-                                _tabController.animateTo(0);
-                              }),
+                              AccountScreen(
+                                onNavigateToAnalysis: () {
+                                  _tabController.animateTo(0);
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -231,10 +280,14 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                       },
                       child: (selectedIssue != null && selectedStock != null)
                           ? Align(
-                              key: ValueKey(selectedIssue!.id), // Key가 바뀌어야 애니메이션 동작
+                              key: ValueKey(
+                                selectedIssue!.id,
+                              ), // Key가 바뀌어야 애니메이션 동작
                               alignment: Alignment.bottomCenter,
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 28),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 28,
+                                ),
                                 child: IssueDetailSheet(
                                   symbol: selectedStock.symbol,
                                   issue: selectedIssue!,
@@ -256,7 +309,10 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               behavior: HitTestBehavior.translucent,
               onHorizontalDragUpdate: (details) {
                 setState(() {
-                  _chatWidth = (_chatWidth - details.delta.dx).clamp(_minChatWidth, maxChatWidth);
+                  _chatWidth = (_chatWidth - details.delta.dx).clamp(
+                    _minChatWidth,
+                    maxChatWidth,
+                  );
                 });
               },
               child: MouseRegion(
@@ -265,7 +321,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   width: 8,
                   height: double.infinity,
                   decoration: const BoxDecoration(
-                    border: Border(left: BorderSide(color: AppTheme.textMain24, width: 1)),
+                    border: Border(
+                      left: BorderSide(color: AppTheme.textMain24, width: 1),
+                    ),
                   ),
                 ),
               ),
@@ -275,9 +333,23 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
           if (_isChatOpen)
             SizedBox(
               width: _chatWidth,
-              child: ChatPanel(
-                tabController: _tabController,
-                tabLabels: _tabLabels,
+              child: ListenableBuilder(
+                listenable: _tabController,
+                builder: (context, _) => AriChatPanel(
+                  appId: 'aristock',
+                  contextLabel: _tabLabels[_tabController.index],
+                  headerTitle: 'AI 에이전트 분석',
+                  hintText: '분석 요청...',
+                  theme: AriChatTheme(
+                    primaryColor: AppTheme.primaryBlue,
+                    surfaceColor: AppTheme.surfaceWhite,
+                    backgroundColor: AppTheme.backgroundLight,
+                    textMain: AppTheme.textMain,
+                    textSub: AppTheme.textSub,
+                    borderColor: AppTheme.textMain10,
+                    hintColor: AppTheme.textMain38,
+                  ),
+                ),
               ),
             ),
         ],

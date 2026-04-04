@@ -16,8 +16,6 @@ import 'package:aristock/shared/models/market/market_timeframe.dart';
 import 'package:aristock/shared/services/tools/technical_tools.dart';
 import 'package:aristock/shared/services/log_provider.dart';
 import 'package:aristock/components/watchlist/models/watchlist_model.dart';
-import 'package:aristock/components/chat/chat_provider.dart';
-
 /// AriFramework 표준을 준수하는 종목분석 프로토콜 핸들러입니다.
 /// ARI 플랫폼과 통신하는 표준 프로토콜 핸들러입니다.
 /// AI 에이전트의 명령을 수신하여 앱의 기능을 실행하고 상태를 반환합니다.
@@ -27,7 +25,6 @@ class ARIProtocolHandler {
   final WatchlistProvider watchlistProvider;
   final TradingStrategyProvider tradingStrategyProvider;
   final TradingRecordProvider tradingRecordProvider;
-  final ChatProvider chatProvider;
   final KiwoomMarketDataRepository marketDataService;
   final TechnicalTools technicalTools;
   final bool isHeadless;
@@ -38,7 +35,6 @@ class ARIProtocolHandler {
     required this.watchlistProvider,
     required this.tradingStrategyProvider,
     required this.tradingRecordProvider,
-    required this.chatProvider,
     required this.marketDataService,
     required this.isHeadless,
   }) : technicalTools = TechnicalTools(marketDataService);
@@ -49,7 +45,6 @@ class ARIProtocolHandler {
     required WatchlistProvider watchlistProvider,
     required TradingStrategyProvider tradingStrategyProvider,
     required TradingRecordProvider tradingRecordProvider,
-    required ChatProvider chatProvider,
     required KiwoomMarketDataRepository marketDataService,
     required bool isHeadless,
   }) {
@@ -59,7 +54,6 @@ class ARIProtocolHandler {
       watchlistProvider: watchlistProvider,
       tradingStrategyProvider: tradingStrategyProvider,
       tradingRecordProvider: tradingRecordProvider,
-      chatProvider: chatProvider,
       marketDataService: marketDataService,
       isHeadless: isHeadless,
     );

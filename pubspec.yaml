@@ -43,6 +43,12 @@ dependencies:
       url: https://github.com/rightsna/ARIAgent.git
       ref: main
       path: ari-framework/plugin
+  ari_widgets:
+    path: ../ari-framework/widgets
+
+dependency_overrides:
+  ari_plugin:
+    path: ../ari-framework/plugin
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   http: ^1.2.2
