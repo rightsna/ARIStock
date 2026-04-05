@@ -41,16 +41,20 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
       animation: widget.provider,
       builder: (context, _) {
         final issue = _currentIssue;
-        
+
         return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           child: Container(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.8,
             ),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.08),
@@ -78,12 +82,22 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
                         const SizedBox(height: 24),
                         IssueTrace(
                           issue: issue,
-                          onHistoryDelete: (h) => _showHistoryDeleteConfirm(context, issue, h),
+                          onHistoryDelete: (h) =>
+                              _showHistoryDeleteConfirm(context, issue, h),
                         ),
                         const SizedBox(height: 32),
-                        const Text('최신 조사 결과', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+                        const Text(
+                          '최신 조사 결과',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryBlue,
+                          ),
+                        ),
                         const SizedBox(height: 8),
-                        MarkdownBody(data: issue.lastInvestigation ?? '상세 조사 내용이 아직 없습니다.'),
+                        MarkdownBody(
+                          data: issue.lastInvestigation ?? '상세 조사 내용이 아직 없습니다.',
+                        ),
                       ],
                     ),
                   ),
@@ -109,7 +123,10 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.surfaceWhite,
-        title: const Text('이슈 삭제', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          '이슈 삭제',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: const Text('이 이슈와 관련된 모든 히스토리 기록이 영구적으로 삭제됩니다. 계속하시겠습니까?'),
         actions: [
           TextButton(
@@ -122,19 +139,29 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
               Navigator.pop(ctx);
               Navigator.pop(context);
             },
-            child: const Text('삭제', style: TextStyle(color: AppTheme.accentRed)),
+            child: const Text(
+              '삭제',
+              style: TextStyle(color: AppTheme.accentRed),
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _showHistoryDeleteConfirm(BuildContext context, InvestmentIssue issue, IssueHistory history) {
+  void _showHistoryDeleteConfirm(
+    BuildContext context,
+    InvestmentIssue issue,
+    IssueHistory history,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.surfaceWhite,
-        title: const Text('기록 삭제', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          '기록 삭제',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: const Text('선택한 이슈 트레이스 기록을 영구적으로 삭제하시겠습니까?'),
         actions: [
           TextButton(
@@ -146,11 +173,13 @@ class _IssueDetailSheetState extends State<IssueDetailSheet> {
               await widget.provider.deleteHistoryItem(issue, history);
               Navigator.pop(ctx);
             },
-            child: const Text('삭제', style: TextStyle(color: AppTheme.accentRed)),
+            child: const Text(
+              '삭제',
+              style: TextStyle(color: AppTheme.accentRed),
+            ),
           ),
         ],
       ),
     );
   }
-
 }

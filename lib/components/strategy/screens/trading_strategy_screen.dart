@@ -86,7 +86,11 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: Row(
               children: [
-                const Icon(Icons.auto_awesome_outlined, color: AppTheme.primaryBlue, size: 20),
+                const Icon(
+                  Icons.auto_awesome_outlined,
+                  color: AppTheme.primaryBlue,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   '${selectedStock.name} 매매전략',
@@ -100,7 +104,10 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
                 if (strategy != null)
                   Text(
                     '업데이트: ${strategy.updatedAt}',
-                    style: const TextStyle(color: AppTheme.textSub, fontSize: 12),
+                    style: const TextStyle(
+                      color: AppTheme.textSub,
+                      fontSize: 12,
+                    ),
                   ),
               ],
             ),
@@ -167,7 +174,8 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
                 AriAgent.report(
                   appId: 'aristock',
                   type: 'CHAT_MESSAGE',
-                  message: '$stockName($symbol)에 대한 매매전략을 수립해줘. (매수가, 손절가, 목표가 포함)',
+                  message:
+                      '$stockName($symbol)에 대한 매매전략을 수립해줘. (매수가, 손절가, 목표가 포함)',
                 );
               },
               icon: const Icon(Icons.auto_awesome, size: 14),
@@ -180,7 +188,10 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 foregroundColor: AppTheme.primaryBlue,
                 side: const BorderSide(color: AppTheme.primaryBlue, width: 1),
                 shape: RoundedRectangleBorder(

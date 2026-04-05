@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:aristock/shared/repository/kiwoom/trading_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -112,7 +113,8 @@ void main(List<String> args) async {
     // Headless 모드 체크 (UI 없이 백그라운드 서비스로 동작)
     if (isHeadless) {
       debugPrint('ARIStock: Running in headless mode...');
-      // 프로세스 유지를 위해 무한 대기
+      // 프로세스 유지를 위해 무한 대기 (Dart 이벤트를 계속 유지함)
+      await Completer().future; 
       return;
     }
   }
@@ -126,7 +128,9 @@ void main(List<String> args) async {
         ChangeNotifierProvider.value(value: tradingStrategyProvider),
         ChangeNotifierProvider.value(value: tradingRecordProvider),
         ChangeNotifierProvider.value(value: taskProvider),
-        ChangeNotifierProvider(create: (_) => StockChartProvider(marketDataService)),
+        ChangeNotifierProvider(
+          create: (_) => StockChartProvider(marketDataService),
+        ),
       ],
       child: const ARIStockApp(),
     ),

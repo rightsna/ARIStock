@@ -215,104 +215,121 @@ class _TradingHistoryScreenState extends State<TradingHistoryScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          ...stockTasks.map(
-            (task) {
-              final isExpanded = _expandedTaskId == task.id;
-              return Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                child: Column(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          _expandedTaskId = isExpanded ? null : task.id;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    task.label,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.textMain,
-                                    ),
+          ...stockTasks.map((task) {
+            final isExpanded = _expandedTaskId == task.id;
+            return Theme(
+              data: Theme.of(
+                context,
+              ).copyWith(dividerColor: Colors.transparent),
+              child: Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _expandedTaskId = isExpanded ? null : task.id;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 4,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  task.label,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.textMain,
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    task.cronDescription,
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppTheme.textSub,
-                                    ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  task.cronDescription,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppTheme.textSub,
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            isExpanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            size: 18,
+                            color: AppTheme.textSub,
+                          ),
+                          const SizedBox(width: 8),
+                          Transform.scale(
+                            scale: 0.8,
+                            child: Switch(
+                              value: task.enabled,
+                              onChanged: (val) =>
+                                  taskProvider.toggleTask(task.id),
+                              activeColor: AppTheme.primaryBlue,
+                              inactiveTrackColor: Colors.grey.withValues(
+                                alpha: 0.1,
                               ),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                             ),
-                            Icon(
-                              isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                              size: 18,
-                              color: AppTheme.textSub,
+                          ),
+                          IconButton(
+                            onPressed: () => _showDeleteConfirm(
+                              context,
+                              taskProvider,
+                              task.id,
                             ),
-                            const SizedBox(width: 8),
-                            Transform.scale(
-                              scale: 0.8,
-                              child: Switch(
-                                value: task.enabled,
-                                onChanged: (val) => taskProvider.toggleTask(task.id),
-                                activeColor: AppTheme.primaryBlue,
-                                inactiveTrackColor: Colors.grey.withValues(alpha: 0.1),
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => _showDeleteConfirm(context, taskProvider, task.id),
-                              icon: const Icon(Icons.delete_outline, size: 18),
-                              color: Colors.red.withValues(alpha: 0.6),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              visualDensity: VisualDensity.compact,
-                              tooltip: '삭제',
-                            ),
-                          ],
+                            icon: const Icon(Icons.delete_outline, size: 18),
+                            color: Colors.red.withValues(alpha: 0.6),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            visualDensity: VisualDensity.compact,
+                            tooltip: '삭제',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (isExpanded)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 8, top: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.textMain.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        task.prompt,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textMain54,
+                          height: 1.5,
                         ),
                       ),
                     ),
-                    if (isExpanded)
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        margin: const EdgeInsets.only(bottom: 8, top: 4),
-                        decoration: BoxDecoration(
-                          color: AppTheme.textMain.withValues(alpha: 0.04),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          task.prompt,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.textMain54,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
   }
 
-  void _showDeleteConfirm(BuildContext context, AriTaskProvider provider, String taskId) {
+  void _showDeleteConfirm(
+    BuildContext context,
+    AriTaskProvider provider,
+    String taskId,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
