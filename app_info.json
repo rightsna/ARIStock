@@ -4,7 +4,7 @@
     "description":  "AI가 주식상담, 포트폴리오 관리, 그리고 전략을 직접 짜주는 스마트한 투자 파트너입니다. (UI 대시보드 및 --headless 백그라운드 서비스 모드 지원)",
     "category":  "Finance / Investing",
     "github_url":  "https://github.com/rightsna/ARIStock",
-    "version":  "1.1.2",
-    "version_code":  18,
+    "version":  "1.1.3",
+    "version_code":  19,
     "platform":  "mac"
 }
