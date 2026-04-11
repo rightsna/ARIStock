@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ari_plugin/ari_plugin.dart';
+import 'package:provider/provider.dart';
 import '../../../../shared/theme.dart';
 
 class AddIssueRequestDialog extends StatefulWidget {
