@@ -87,6 +87,7 @@ void main(List<String> args) async {
       readArg('--host=') ??
       const String.fromEnvironment('ARI_HOST', defaultValue: '127.0.0.1');
 
+  final chatProvider = AriChatProvider();
   final taskProvider = AriTaskProvider();
 
   if (port.isNotEmpty) {
@@ -123,6 +124,7 @@ void main(List<String> args) async {
         ChangeNotifierProvider.value(value: tradingStrategyProvider),
         ChangeNotifierProvider.value(value: tradingRecordProvider),
         ChangeNotifierProvider.value(value: taskProvider),
+        ChangeNotifierProvider.value(value: chatProvider),
         ChangeNotifierProvider(
           create: (_) => StockChartProvider(marketDataService),
         ),

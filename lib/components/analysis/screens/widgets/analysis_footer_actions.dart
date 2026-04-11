@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ari_plugin/ari_plugin.dart';
+import 'package:provider/provider.dart';
 import '../../providers/analysis_provider.dart';
 import '../../../../shared/theme.dart';
 
@@ -32,10 +33,10 @@ class AnalysisFooterActions extends StatelessWidget {
 
   static void requestAIUpdate(BuildContext context, String symbol) {
     if (AriAgent.isConnected) {
-      AriAgent.report(
+      context.read<AriChatProvider>().sendAgentMessage(
+        '$symbol 종목에 대한 최신 상황을 분석하여 통합 이슈 트레이스를 업데이트해줘.',
         appId: 'aristock',
-        type: 'REQUEST_ANALYSIS',
-        message: '$symbol 종목에 대한 최신 상황을 분석하여 통합 이슈 트레이스를 업데이트해줘.',
+        platform: 'aristock',
         details: {'symbol': symbol},
       );
       ScaffoldMessenger.of(context).showSnackBar(

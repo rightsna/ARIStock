@@ -89,11 +89,10 @@ class _AddIssueRequestDialogState extends State<AddIssueRequestDialog> {
   void _sendAddRequest() {
     final requestText = _requestController.text.trim();
     if (requestText.isNotEmpty && AriAgent.isConnected) {
-      AriAgent.report(
+      context.read<AriChatProvider>().sendAgentMessage(
+        '${widget.symbol} 종목에 대해 다음 요청사항을 반영하여 투자 이슈 매니지먼트 보드를 대대적으로 업데이트해줘:\n\n[사용자 지시사항]: $requestText',
         appId: 'aristock',
-        type: 'REQUEST_ANALYSIS',
-        message:
-            '${widget.symbol} 종목에 대해 다음 요청사항을 반영하여 투자 이슈 매니지먼트 보드를 대대적으로 업데이트해줘:\n\n[사용자 지시사항]: $requestText',
+        platform: 'aristock',
         details: {'symbol': widget.symbol, 'editRequest': requestText},
       );
       Navigator.pop(context);

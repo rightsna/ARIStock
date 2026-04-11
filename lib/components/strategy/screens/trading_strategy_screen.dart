@@ -171,11 +171,10 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () {
-                AriAgent.report(
+                context.read<AriChatProvider>().sendAgentMessage(
+                  '$stockName($symbol)에 대한 매매전략을 수립해줘. (매수가, 손절가, 목표가 포함)',
                   appId: 'aristock',
-                  type: 'CHAT_MESSAGE',
-                  message:
-                      '$stockName($symbol)에 대한 매매전략을 수립해줘. (매수가, 손절가, 목표가 포함)',
+                  platform: 'aristock',
                 );
               },
               icon: const Icon(Icons.auto_awesome, size: 14),

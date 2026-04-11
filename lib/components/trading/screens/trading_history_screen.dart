@@ -370,10 +370,10 @@ class _TradingHistoryScreenState extends State<TradingHistoryScreen> {
           const SizedBox(height: 24),
           OutlinedButton.icon(
             onPressed: () {
-              AriAgent.report(
+              context.read<AriChatProvider>().sendAgentMessage(
+                '매매전략대로 자동매매 해줘',
                 appId: 'aristock',
-                type: 'CHAT_MESSAGE',
-                message: '매매전략대로 자동매매 해줘',
+                platform: 'aristock',
               );
             },
             icon: const Icon(Icons.bolt, size: 14),
