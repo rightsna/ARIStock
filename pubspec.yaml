@@ -37,13 +37,13 @@ dependencies:
   provider: ^6.1.5+1
   intl: ^0.20.2
   google_fonts: ^8.0.2
-  ari_plugin:
-    path: ../ARIAgent/ari-framework/plugin
   # ari_plugin:
-  #   git:
-  #     url: https://github.com/rightsna/ARIAgent.git
-  #     ref: main
-  #     path: ari-framework/plugin
+  #   path: ../ARIAgent/ari-framework/plugin
+  ari_plugin:
+    git:
+      url: https://github.com/rightsna/ARIAgent.git
+      ref: main
+      path: ari-framework/plugin
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   http: ^1.2.2
