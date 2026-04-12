@@ -26,7 +26,6 @@ class StockAnalysisAdapter extends TypeAdapter<StockAnalysis> {
       longTermScore: fields[5] as double?,
       summary: fields[6] as String?,
       otherOpinions: fields[7] as String?,
-      userNote: fields[8] as String?,
       issues: (fields[9] as List?)?.cast<InvestmentIssue>(),
     );
   }
@@ -34,7 +33,7 @@ class StockAnalysisAdapter extends TypeAdapter<StockAnalysis> {
   @override
   void write(BinaryWriter writer, StockAnalysis obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.symbol)
       ..writeByte(1)
@@ -51,8 +50,6 @@ class StockAnalysisAdapter extends TypeAdapter<StockAnalysis> {
       ..write(obj.summary)
       ..writeByte(7)
       ..write(obj.otherOpinions)
-      ..writeByte(8)
-      ..write(obj.userNote)
       ..writeByte(9)
       ..write(obj.issues)
       ..writeByte(10)

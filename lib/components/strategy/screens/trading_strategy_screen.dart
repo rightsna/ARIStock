@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter/services.dart';
 
 import 'package:ari_plugin/ari_plugin.dart';
+import '../models/trading_strategy_model.dart';
 import '../providers/trading_strategy_provider.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
 import 'widgets/stock_daily_chart.dart';
@@ -120,7 +121,12 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
           Expanded(
             child: strategy == null
                 ? _buildEmpty(selectedStock.symbol, selectedStock.name)
-                : _buildContent(strategy.content, strategy.updatedAt),
+                : _buildContent(
+                    context,
+                    strategy,
+                    strategyProvider,
+                    selectedStock.name,
+                  ),
           ),
         ],
       ),
@@ -171,6 +177,15 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () {
+                if (!AriAgent.isConnected) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('AI 에이전트와 연결되어 있지 않습니다. 서버 상태를 확인해주세요.'),
+                      backgroundColor: AppTheme.accentRed,
+                    ),
+                  );
+                  return;
+                }
                 context.read<AriChatProvider>().sendAgentMessage(
                   '$stockName($symbol)에 대한 매매전략을 수립해줘. (매수가, 손절가, 목표가 포함)',
                   appId: 'aristock',
@@ -204,33 +219,105 @@ class _TradingStrategyScreenState extends State<TradingStrategyScreen> {
     );
   }
 
-  Widget _buildContent(String content, String updatedAt) {
+  Widget _buildContent(
+    BuildContext context,
+    TradingStrategy strategy,
+    TradingStrategyProvider provider,
+    String stockName,
+  ) {
+    final hasDiff = provider.hasPendingDiff(strategy.symbol);
+    final originalContent = provider.getOriginalContent(strategy.symbol);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MarkdownBody(
-            data: content,
-            styleSheet: MarkdownStyleSheet(
-              p: const TextStyle(
-                fontSize: 14,
-                height: 1.6,
-                color: AppTheme.textMain,
-              ),
-              h2: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textMain,
-              ),
-              h3: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textMain,
-              ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '매매전략 지시서',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryBlue,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Clipboard.setData(
+                          ClipboardData(text: strategy.content),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('전략 내용이 클립보드에 복사되었습니다.'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.copy_rounded,
+                              size: 14,
+                              color: AppTheme.textSub,
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              '복사',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textSub,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'AI가 수립한 시장 분석 결과를 바탕으로 최적의 포지션 진입 및 청산 전략을 관리하며, 실제 매매 시 AI는 이 지시서의 가이드라인을 엄격히 준수합니다. 수정이나 새로운 전략 수립이 필요하면 AI에게 요청해 주세요.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.textSub,
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 48),
+          AriMarkdownEditor(
+            content: strategy.content,
+            previousContent: originalContent,
+            hasDiff: hasDiff,
+            onApproveAll: () => provider.approveUpdate(strategy.symbol),
+            onRejectAll: () => provider.rejectUpdate(strategy.symbol),
+            onPartialUpdate: (content, previous) {
+              provider.updateStrategy(strategy.copyWith(content: content));
+            },
+          ),
+          const SizedBox(height: 10),
+          const Align(
+            alignment: Alignment.center,
+            child: Text(
+              '이 AI전략은 자동매매에 사용되며, 수정이 필요하면 AI에게 요청할 수 있습니다.',
+              style: TextStyle(color: AppTheme.textMain38, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 24),
           Center(
             child: TextButton.icon(
               onPressed: () => _showResetConfirm(context),

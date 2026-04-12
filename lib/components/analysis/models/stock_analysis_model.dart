@@ -29,8 +29,6 @@ class StockAnalysis {
   @HiveField(7)
   final String? otherOpinions;
 
-  @HiveField(8)
-  final String? userNote;
 
   @HiveField(9)
   final List<InvestmentIssue>? issues;
@@ -48,7 +46,6 @@ class StockAnalysis {
     this.longTermScore,
     this.summary,
     this.otherOpinions,
-    this.userNote,
     this.issues,
   });
 
@@ -63,7 +60,6 @@ class StockAnalysis {
       longTermScore: _toDouble(map['longTermScore']),
       summary: map['summary'],
       otherOpinions: map['otherOpinions'],
-      userNote: map['userNote'],
       issues: map['issues'] != null 
           ? (map['issues'] as List).map((i) => InvestmentIssue.fromMap(Map<String, dynamic>.from(i))).toList()
           : null,
@@ -81,7 +77,6 @@ class StockAnalysis {
       'longTermScore': longTermScore,
       'summary': summary,
       'otherOpinions': otherOpinions,
-      'userNote': userNote,
       'issues': issues?.map((i) => i.toMap()).toList(),
     };
   }
@@ -94,7 +89,6 @@ class StockAnalysis {
   }
 
   StockAnalysis copyWith({
-    String? userNote,
     List<InvestmentIssue>? issues,
     String? stockName,
     String? content,
@@ -114,7 +108,6 @@ class StockAnalysis {
       longTermScore: longTermScore ?? this.longTermScore,
       summary: summary ?? this.summary,
       otherOpinions: otherOpinions ?? this.otherOpinions,
-      userNote: userNote ?? this.userNote,
       issues: issues ?? this.issues,
     );
   }

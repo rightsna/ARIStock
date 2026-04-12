@@ -276,13 +276,6 @@ class AnalysisProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateUserNote(String note) async {
-    if (_selectedAnalysis == null) return;
-    final updatedAnalysis = _selectedAnalysis!.copyWith(userNote: note);
-    await _repository.saveAnalysis(updatedAnalysis);
-    _selectedAnalysis = updatedAnalysis;
-    notifyListeners();
-  }
 
   Future<void> clearLog(String symbol) async {
     await _repository.deleteAnalysis(symbol);

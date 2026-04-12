@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/foundation.dart';
 
 import '../providers/analysis_provider.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
@@ -10,10 +9,8 @@ import '../../../shared/theme.dart';
 import 'widgets/trend_summary_card.dart';
 import 'widgets/analysis_report_header.dart';
 import 'gantt/analysis_issue_gantt.dart';
-import 'widgets/user_note_card.dart';
 import 'widgets/analysis_state_views.dart';
 import 'widgets/analysis_footer_actions.dart';
-import 'widgets/analysis_debug_tools.dart';
 
 /// 종목분석 화면: 단일 종목에 대한 통합 투자 이슈 매니지먼트를 담당합니다 (Living Report).
 class AnalysisScreen extends StatefulWidget {
@@ -75,13 +72,6 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                             selectedStock.symbol,
                           ),
                     ),
-                  const SizedBox(height: 48),
-                  if (kDebugMode)
-                    AnalysisDebugTools(
-                      provider: analysisProvider,
-                      symbol: selectedStock.symbol,
-                      name: selectedStock.name,
-                    ),
                   if (analysisProvider.selectedAnalysis != null)
                     AnalysisFooterActions(
                       provider: analysisProvider,
@@ -105,7 +95,8 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
         AnalysisReportHeader(
           stockName: stock.name,
           date: analysis.date,
-          onRequestUpdate: () => AnalysisFooterActions.requestAIUpdate(context, stock.symbol),
+          onRequestUpdate: () =>
+              AnalysisFooterActions.requestAIUpdate(context, stock.symbol),
         ),
         const SizedBox(height: 32),
         TrendSummaryCard(
@@ -116,11 +107,6 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
         ),
         const SizedBox(height: 32),
         AnalysisIssueGantt(symbol: stock.symbol, issues: analysis.issues ?? []),
-        const SizedBox(height: 32),
-        UserNoteCard(
-          initialNote: analysis.userNote,
-          onChanged: (value) => provider.updateUserNote(value),
-        ),
       ],
     );
   }
