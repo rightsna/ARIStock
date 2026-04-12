@@ -2,7 +2,7 @@ name: aristock
 description: "ARI Stock"
 publish_to: "none"
 
-version: 1.1.5+21
+version: 1.1.6+22
 
 environment:
   sdk: ^3.11.1
